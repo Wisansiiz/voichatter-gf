@@ -1,6 +1,8 @@
 package main
 
 import (
+	_ "github.com/gogf/gf/contrib/nosql/redis/v2"
+
 	_ "voichatter/internal/packed"
 
 	_ "voichatter/internal/logic"
