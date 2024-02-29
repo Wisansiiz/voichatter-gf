@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"log"
 	"voichatter/internal/model"
 	"voichatter/internal/service"
 
@@ -10,16 +9,14 @@ import (
 )
 
 func (c *ControllerV1) SignIn(ctx context.Context, req *v1.SignInReq) (res *v1.SignInRes, err error) {
-	in, err := service.User().SignIn(ctx, model.UserSignInInput{
-		Password: req.Password,
-		Passport: req.Passport,
+	token, err := service.User().SignIn(ctx, model.UserSignInInput{
+		Username:     req.Username,
+		PasswordHash: req.PasswordHash,
 	})
 	if err != nil {
 		return nil, err
 	}
-	log.Println("signIn", req)
-	res = &v1.SignInRes{
-		User: &in,
-	}
-	return
+	return &v1.SignInRes{
+		Token: token,
+	}, nil
 }
