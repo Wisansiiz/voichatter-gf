@@ -9,13 +9,12 @@ import (
 	"context"
 	v1 "voichatter/api/user/v1"
 	"voichatter/internal/model"
-	"voichatter/internal/model/entity"
 )
 
 type (
 	IUser interface {
 		SignUp(ctx context.Context, req *v1.SignUpReq) (res *v1.SignUpRes, err error)
-		SignIn(ctx context.Context, in model.UserSignInInput) (user entity.User, err error)
+		SignIn(ctx context.Context, in model.UserSignInInput) (token string, err error)
 		SignOut(ctx context.Context, req *v1.SignOutReq) (res *v1.SignOutRes, err error)
 	}
 )
