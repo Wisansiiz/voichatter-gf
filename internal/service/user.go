@@ -16,6 +16,7 @@ type (
 		SignUp(ctx context.Context, req *v1.SignUpReq) (res *v1.SignUpRes, err error)
 		SignIn(ctx context.Context, in model.UserSignInInput) (token string, err error)
 		SignOut(ctx context.Context, req *v1.SignOutReq) (res *v1.SignOutRes, err error)
+		ServerList(ctx context.Context, req *v1.ServerListReq) (res *v1.ServerListRes, err error)
 	}
 )
 
