@@ -11,8 +11,12 @@ import (
 
 type (
 	IMiddleware interface {
+		// Ctx injects custom business context variable into context of current request.
+		Ctx(r *ghttp.Request)
 		// CORS allows Cross-origin resource sharing.
 		CORS(r *ghttp.Request)
+		// Auth 验证是否登录
+		Auth(r *ghttp.Request)
 	}
 )
 
