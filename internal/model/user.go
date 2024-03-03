@@ -3,9 +3,10 @@ package model
 import "time"
 
 type UserCreateInput struct {
-	Username     string
-	Email        string
-	PasswordHash string
+	Username          string
+	Email             string
+	PasswordHash      string
+	ReenteredPassword string
 }
 
 type UserSignInInput struct {

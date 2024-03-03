@@ -26,9 +26,21 @@ func New() service.IUser {
 	return &sUser{}
 }
 
-func (s sUser) SignUp(ctx context.Context, req *v1.SignUpReq) (res *v1.SignUpRes, err error) {
-	//TODO implement me
-	panic("implement me")
+func (s sUser) SignUp(ctx context.Context, in model.UserCreateInput) (res *v1.SignUpRes, err error) {
+	pwd, err := bcrypt.GenerateFromPassword([]byte(in.PasswordHash), bcrypt.DefaultCost) //加密处理
+	if err != nil {
+		return res, gerror.New(`密码加密失败`)
+	}
+	var user = entity.User{
+		Username:         in.Username,
+		Email:            in.Email,
+		PasswordHash:     string(pwd),
+		RegistrationDate: gtime.Now(),
+	}
+	if _, err = dao.User.Ctx(ctx).Insert(user); err != nil {
+		return res, gerror.New(`注册失败`)
+	}
+	return
 }
 
 func (s sUser) SignIn(ctx context.Context, in model.UserSignInInput) (token string, err error) {
@@ -71,11 +83,11 @@ func (s sUser) SignIn(ctx context.Context, in model.UserSignInInput) (token stri
 	return
 }
 
-func (s sUser) SignOut(ctx context.Context, req *v1.SignOutReq) (res *v1.SignOutRes, err error) {
-	panic("implement me")
+func (s sUser) SignOut(ctx context.Context, _ *v1.SignOutReq) (err error) {
+	return service.Session().RemoveUser(ctx)
 }
 
-func (s sUser) ServerList(ctx context.Context, req *v1.ServerListReq) (res *v1.ServerListRes, err error) {
+func (s sUser) ServerList(ctx context.Context, _ *v1.ServerListReq) (res *v1.ServerListRes, err error) {
 	user := service.BizCtx().Get(ctx).User
 	var servers []entity.Server
 	err = g.Model("server s").
