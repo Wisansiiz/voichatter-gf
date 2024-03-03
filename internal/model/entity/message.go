@@ -17,4 +17,5 @@ type Message struct {
 	SendDate     *gtime.Time `json:"send_date"      ` //
 	DeletedAt    *gtime.Time `json:"deleted_at"     ` //
 	MessageId    uint64      `json:"message_id"     ` //
+	ServerId     uint64      `json:"server_id"      ` //
 }

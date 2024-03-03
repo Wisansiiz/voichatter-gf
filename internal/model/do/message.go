@@ -19,4 +19,5 @@ type Message struct {
 	SendDate     *gtime.Time //
 	DeletedAt    *gtime.Time //
 	MessageId    interface{} //
+	ServerId     interface{} //
 }
