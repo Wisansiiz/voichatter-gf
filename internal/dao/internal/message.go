@@ -27,6 +27,7 @@ type MessageColumns struct {
 	SendDate     string //
 	DeletedAt    string //
 	MessageId    string //
+	ServerId     string //
 }
 
 // messageColumns holds the columns for table message.
@@ -38,6 +39,7 @@ var messageColumns = MessageColumns{
 	SendDate:     "send_date",
 	DeletedAt:    "deleted_at",
 	MessageId:    "message_id",
+	ServerId:     "server_id",
 }
 
 // NewMessageDao creates and returns a new DAO object for table data access.

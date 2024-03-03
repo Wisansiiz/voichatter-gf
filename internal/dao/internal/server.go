@@ -24,7 +24,6 @@ type ServerColumns struct {
 	ServerName    string //
 	CreatorUserId string //
 	CreationDate  string //
-	ServerTheme   string //
 	CreateDate    string //
 	ServerType    string //
 	ServerImgUrl  string //
@@ -37,7 +36,6 @@ var serverColumns = ServerColumns{
 	ServerName:    "server_name",
 	CreatorUserId: "creator_user_id",
 	CreationDate:  "creation_date",
-	ServerTheme:   "server_theme",
 	CreateDate:    "create_date",
 	ServerType:    "server_type",
 	ServerImgUrl:  "server_img_url",

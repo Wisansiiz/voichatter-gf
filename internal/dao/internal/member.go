@@ -25,7 +25,6 @@ type MemberColumns struct {
 	UserId       string //
 	JoinDate     string //
 	SPermissions string //
-	CPermissions string //
 	DeletedAt    string //
 }
 
@@ -36,7 +35,6 @@ var memberColumns = MemberColumns{
 	UserId:       "user_id",
 	JoinDate:     "join_date",
 	SPermissions: "s_permissions",
-	CPermissions: "c_permissions",
 	DeletedAt:    "deleted_at",
 }
 
