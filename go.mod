@@ -3,10 +3,11 @@ module voichatter
 go 1.21
 
 require (
+	github.com/goflyfox/gtoken v1.5.10
 	github.com/gogf/gf/contrib/drivers/mysql/v2 v2.6.3
 	github.com/gogf/gf/contrib/nosql/redis/v2 v2.6.3
 	github.com/gogf/gf/v2 v2.6.3
-	github.com/golang-jwt/jwt/v5 v5.2.0
+	github.com/gorilla/websocket v1.5.1
 	golang.org/x/crypto v0.20.0
 )
 
@@ -20,7 +21,6 @@ require (
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
-	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/grokify/html-strip-tags-go v0.1.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
