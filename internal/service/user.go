@@ -14,9 +14,7 @@ import (
 type (
 	IUser interface {
 		SignUp(ctx context.Context, in model.UserCreateInput) (res *v1.SignUpRes, err error)
-		SignIn(ctx context.Context, in model.UserSignInInput) (token string, err error)
-		SignOut(ctx context.Context, _ *v1.SignOutReq) (err error)
-		ServerList(ctx context.Context, _ *v1.ServerListReq) (res *v1.ServerListRes, err error)
+		UserList(ctx context.Context, serverId uint64) (res *v1.UserListRes, err error)
 	}
 )
 
