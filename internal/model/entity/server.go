@@ -14,7 +14,6 @@ type Server struct {
 	ServerName    string      `json:"server_name"     ` //
 	CreatorUserId uint64      `json:"creator_user_id" ` //
 	CreationDate  *gtime.Time `json:"creation_date"   ` //
-	ServerTheme   string      `json:"server_theme"    ` //
 	CreateDate    *gtime.Time `json:"create_date"     ` //
 	ServerType    string      `json:"server_type"     ` //
 	ServerImgUrl  string      `json:"server_img_url"  ` //

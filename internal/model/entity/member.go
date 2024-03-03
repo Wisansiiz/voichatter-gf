@@ -15,6 +15,5 @@ type Member struct {
 	UserId       uint64      `json:"user_id"       ` //
 	JoinDate     *gtime.Time `json:"join_date"     ` //
 	SPermissions string      `json:"s_permissions" ` //
-	CPermissions string      `json:"c_permissions" ` //
 	DeletedAt    *gtime.Time `json:"deleted_at"    ` //
 }

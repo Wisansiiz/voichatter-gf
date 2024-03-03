@@ -17,6 +17,5 @@ type Member struct {
 	UserId       interface{} //
 	JoinDate     *gtime.Time //
 	SPermissions interface{} //
-	CPermissions interface{} //
 	DeletedAt    *gtime.Time //
 }

@@ -16,7 +16,6 @@ type Server struct {
 	ServerName    interface{} //
 	CreatorUserId interface{} //
 	CreationDate  *gtime.Time //
-	ServerTheme   interface{} //
 	CreateDate    *gtime.Time //
 	ServerType    interface{} //
 	ServerImgUrl  interface{} //
