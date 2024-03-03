@@ -6,7 +6,7 @@ import (
 )
 
 type ServerListReq struct {
-	g.Meta `path:"/api/servers-list" method:"get" tags:"UserService" summary:"servers-list"`
+	g.Meta `path:"/servers" method:"get" tags:"ServerService" summary:"servers"`
 }
 
 type ServerListRes struct {
