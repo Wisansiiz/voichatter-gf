@@ -16,6 +16,7 @@ type (
 		ServerList(ctx context.Context, _ *v1.ServerListReq) (res *v1.ServerListRes, err error)
 		ServerCreate(ctx context.Context, in model.ServerCreateInput) (res *v1.ServerCreateRes, err error)
 		ServerJoin(ctx context.Context, serverId uint64) (res *v1.ServerJoinRes, err error)
+		ServerDel(ctx context.Context, serverId uint64) (res *v1.ServerDelRes, err error)
 	}
 )
 

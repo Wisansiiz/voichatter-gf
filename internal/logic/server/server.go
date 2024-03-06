@@ -21,13 +21,13 @@ type (
 func init() {
 	service.RegisterServer(New())
 }
+
 func New() service.IServer {
 	return &sServer{}
 }
-
 func (s *sServer) ServerList(ctx context.Context, _ *v1.ServerListReq) (res *v1.ServerListRes, err error) {
 	userId := gconv.Uint64(ctx.Value("userId"))
-	var servers []entity.Server
+	var servers []model.Server
 	err = g.Model("server s").
 		Fields("s.*").
 		LeftJoin("member m", "s.server_id = m.server_id").
@@ -98,4 +98,16 @@ func (s *sServer) ServerJoin(ctx context.Context, serverId uint64) (res *v1.Serv
 		return nil, gerror.New("添加成员失败")
 	}
 	return
+}
+
+func (s *sServer) ServerDel(ctx context.Context, serverId uint64) (res *v1.ServerDelRes, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	result, err := dao.Server.Ctx(ctx).
+		Where("server_id = ? AND creator_user_id = ?", serverId, userId).
+		Delete()
+	row, _ := result.RowsAffected()
+	if err != nil || row == 0 {
+		return nil, gerror.New("权限不足")
+	}
+	return nil, nil
 }
