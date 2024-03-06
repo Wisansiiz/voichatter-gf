@@ -6,7 +6,7 @@ import (
 )
 
 type UserListReq struct {
-	g.Meta   `path:"/users/{serverId}" method:"get" tags:"" summary:""`
+	g.Meta   `path:"/users/{serverId}" method:"get" tags:"UserService" summary:""`
 	ServerId uint64 `p:"serverId" v:"required"`
 }
 
