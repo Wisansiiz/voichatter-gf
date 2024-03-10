@@ -9,12 +9,16 @@ import (
 	"context"
 	v1 "voichatter/api/user/v1"
 	"voichatter/internal/model"
+
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 type (
 	IUser interface {
 		SignUp(ctx context.Context, in model.UserCreateInput) (res *v1.SignUpRes, err error)
 		UserList(ctx context.Context, serverId uint64) (res *v1.UserListRes, err error)
+		LoginFunc(r *ghttp.Request) (string, interface{})
+		UserId(ctx context.Context, _ *v1.UserIdReq) (res *v1.UserIdRes, err error)
 	}
 )
 

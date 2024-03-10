@@ -4,11 +4,14 @@ import (
 	"context"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/util/gconv"
 	"golang.org/x/crypto/bcrypt"
 	v1 "voichatter/api/user/v1"
 	"voichatter/internal/dao"
 	"voichatter/internal/model"
+	"voichatter/internal/model/do"
 	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
 )
@@ -65,5 +68,47 @@ func (s *sUser) UserList(ctx context.Context, serverId uint64) (res *v1.UserList
 	}
 	return &v1.UserListRes{
 		Users: &users,
+	}, nil
+}
+
+func (s *sUser) LoginFunc(r *ghttp.Request) (string, interface{}) {
+	var u *entity.User
+	var in *model.UserSignInInput
+	if err := r.Parse(&in); err != nil {
+		r.SetError(err)
+		r.Exit()
+	}
+	err := g.DB().Model(entity.User{}).
+		Where(do.User{
+			Username: in.Username,
+		}).
+		Scan(&u)
+	if err != nil {
+		r.SetError(gerror.New(`账号或密码错误`))
+		r.Exit()
+	}
+	if u == nil {
+		r.SetError(gerror.New(`账号或密码错误`))
+		r.Exit()
+	}
+	if err = bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(in.PasswordHash)); err != nil {
+		r.SetError(gerror.New(`账号或密码错误`))
+		r.Exit()
+	}
+	_, err = g.DB().Model(entity.User{}).
+		Where(do.User{
+			UserId: u.UserId,
+		}).
+		Update(do.User{
+			LastLoginDate: gtime.Now(),
+		})
+	// 唯一标识，扩展参数user data
+	return gconv.String(u.UserId), &u
+}
+
+func (s *sUser) UserId(ctx context.Context, _ *v1.UserIdReq) (res *v1.UserIdRes, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	return &v1.UserIdRes{
+		UserId: userId,
 	}, nil
 }
