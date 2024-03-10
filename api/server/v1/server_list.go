@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/gogf/gf/v2/frame/g"
-	"voichatter/internal/model/entity"
+	"voichatter/internal/model"
 )
 
 type ServerListReq struct {
@@ -10,5 +10,5 @@ type ServerListReq struct {
 }
 
 type ServerListRes struct {
-	ServerList *[]entity.Server
+	ServerList *[]model.Server `json:"serverList"`
 }
