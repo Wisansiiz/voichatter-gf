@@ -9,13 +9,12 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
-// Member is the golang structure of table member for DAO operations like Where/Data.
-type Member struct {
-	g.Meta       `orm:"table:member, do:true"`
-	MemberId     interface{} // 成员id
-	ServerId     interface{} // 服务器id
-	UserId       interface{} // 用户id
-	JoinDate     *gtime.Time // 加入日期
-	SPermissions interface{} // 权限
+// Friendship is the golang structure of table friendship for DAO operations like Where/Data.
+type Friendship struct {
+	g.Meta       `orm:"table:friendship, do:true"`
+	FriendshipId interface{} // 关系id
+	UserId1      interface{} // 用户1
+	UserId2      interface{} // 用户2
+	Date         *gtime.Time // 日期
 	DeletedAt    *gtime.Time // 删除日期
 }

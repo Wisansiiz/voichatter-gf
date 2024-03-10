@@ -20,12 +20,12 @@ type MemberDao struct {
 
 // MemberColumns defines and stores column names for table member.
 type MemberColumns struct {
-	MemberId     string //
-	ServerId     string //
-	UserId       string //
-	JoinDate     string //
-	SPermissions string //
-	DeletedAt    string //
+	MemberId     string // 成员id
+	ServerId     string // 服务器id
+	UserId       string // 用户id
+	JoinDate     string // 加入日期
+	SPermissions string // 权限
+	DeletedAt    string // 删除日期
 }
 
 // memberColumns holds the columns for table member.

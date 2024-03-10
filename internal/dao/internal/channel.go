@@ -20,12 +20,14 @@ type ChannelDao struct {
 
 // ChannelColumns defines and stores column names for table channel.
 type ChannelColumns struct {
-	ChannelId    string //
-	ChannelName  string //
-	ServerId     string //
-	Type         string //
-	CreationDate string //
-	CreateUserId string //
+	ChannelId    string // 频道id
+	ChannelName  string // 频道名称
+	ServerId     string // 服务器id
+	Type         string // 服务器类型
+	CreationDate string // 服务器创建时间
+	CreateUserId string // 服务器创建者id
+	DeletedAt    string // 删除时间
+	GroupId      string // 分组表
 }
 
 // channelColumns holds the columns for table channel.
@@ -36,6 +38,8 @@ var channelColumns = ChannelColumns{
 	Type:         "type",
 	CreationDate: "creation_date",
 	CreateUserId: "create_user_id",
+	DeletedAt:    "deleted_at",
+	GroupId:      "group_id",
 }
 
 // NewChannelDao creates and returns a new DAO object for table data access.

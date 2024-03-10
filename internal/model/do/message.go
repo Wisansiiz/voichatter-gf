@@ -12,12 +12,12 @@ import (
 // Message is the golang structure of table message for DAO operations like Where/Data.
 type Message struct {
 	g.Meta       `orm:"table:message, do:true"`
-	SenderUserId interface{} //
-	ChannelId    interface{} //
-	Content      interface{} //
-	Attachment   interface{} //
-	SendDate     *gtime.Time //
-	DeletedAt    *gtime.Time //
-	MessageId    interface{} //
-	ServerId     interface{} //
+	MessageId    interface{} // 消息id
+	ServerId     interface{} // 服务器id
+	ChannelId    interface{} // 频道id
+	SenderUserId interface{} // 发送者id
+	Content      interface{} // 内容
+	Attachment   interface{} // 引用
+	SendDate     *gtime.Time // 发送日期
+	DeletedAt    *gtime.Time // 删除日期
 }

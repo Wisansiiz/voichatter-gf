@@ -20,14 +20,14 @@ type UserDao struct {
 
 // UserColumns defines and stores column names for table user.
 type UserColumns struct {
-	UserId           string //
-	Username         string //
-	Email            string //
-	PasswordHash     string //
-	AvatarUrl        string //
-	RegistrationDate string //
-	LastLoginDate    string //
-	DeletedAt        string //
+	UserId           string // 用户id
+	Username         string // 用户名
+	Email            string // 邮箱
+	PasswordHash     string // 密码
+	AvatarUrl        string // 头像链接
+	RegistrationDate string // 注册时间
+	LastLoginDate    string // 最后登录日期
+	DeletedAt        string // 注销日期
 }
 
 // userColumns holds the columns for table user.

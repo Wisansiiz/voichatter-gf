@@ -12,10 +12,12 @@ import (
 // Channel is the golang structure of table channel for DAO operations like Where/Data.
 type Channel struct {
 	g.Meta       `orm:"table:channel, do:true"`
-	ChannelId    interface{} //
-	ChannelName  interface{} //
-	ServerId     interface{} //
-	Type         interface{} //
-	CreationDate *gtime.Time //
-	CreateUserId interface{} //
+	ChannelId    interface{} // 频道id
+	ChannelName  interface{} // 频道名称
+	ServerId     interface{} // 服务器id
+	Type         interface{} // 服务器类型
+	CreationDate *gtime.Time // 服务器创建时间
+	CreateUserId interface{} // 服务器创建者id
+	DeletedAt    *gtime.Time // 删除时间
+	GroupId      interface{} // 分组表
 }
