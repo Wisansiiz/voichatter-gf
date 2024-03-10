@@ -11,8 +11,8 @@ import (
 )
 
 type IServerV1 interface {
-	ServerDel(ctx context.Context, req *v1.ServerDelReq) (res *v1.ServerDelRes, err error)
 	ServerCreate(ctx context.Context, req *v1.ServerCreateReq) (res *v1.ServerCreateRes, err error)
+	ServerDel(ctx context.Context, req *v1.ServerDelReq) (res *v1.ServerDelRes, err error)
 	ServerJoin(ctx context.Context, req *v1.ServerJoinReq) (res *v1.ServerJoinRes, err error)
 	ServerList(ctx context.Context, req *v1.ServerListReq) (res *v1.ServerListRes, err error)
 }
