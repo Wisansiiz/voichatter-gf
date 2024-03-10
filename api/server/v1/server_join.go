@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/gogf/gf/v2/frame/g"
+	"voichatter/internal/model"
 )
 
 type ServerJoinReq struct {
@@ -10,4 +11,5 @@ type ServerJoinReq struct {
 }
 
 type ServerJoinRes struct {
+	Server *model.Server `json:"server"`
 }
