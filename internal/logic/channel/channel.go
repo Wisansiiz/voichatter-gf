@@ -28,7 +28,7 @@ func (s *sChannel) ChannelCreate(ctx context.Context, in model.ChannelCreateInpu
 	count, err := dao.Member.Ctx(ctx).
 		Where("server_id = ? AND user_id = ?", in.ServerId, userId).
 		Where("s_permissions = ?", "admin").
-		WhereOr("s_permissions = ?", "super_admin").
+		WhereOr("s_permissions = ?", "owner").
 		Count()
 	if err != nil {
 		return nil, err
