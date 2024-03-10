@@ -12,5 +12,5 @@ type MessageListReq struct {
 }
 
 type MessageListRes struct {
-	MessageList *[]model.MessageInfo
+	MessageList *[]model.MessageInfo `json:"messageList"`
 }

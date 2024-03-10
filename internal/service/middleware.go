@@ -6,17 +6,15 @@
 package service
 
 import (
+	"github.com/goflyfox/gtoken/gtoken"
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gorilla/websocket"
 )
 
 type (
 	IMiddleware interface {
-		// Ctx injects custom business context variable into context of current request.
-		Ctx(r *ghttp.Request)
-		// CORS allows Cross-origin resource sharing.
-		CORS(r *ghttp.Request)
-		// Auth 验证是否登录
-		Auth(r *ghttp.Request)
+		// WebSocketAuth websocket鉴权
+		WebSocketAuth(gfToken *gtoken.GfToken, r *ghttp.Request, conn *websocket.Conn)
 	}
 )
 

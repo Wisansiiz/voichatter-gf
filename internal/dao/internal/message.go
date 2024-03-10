@@ -20,26 +20,26 @@ type MessageDao struct {
 
 // MessageColumns defines and stores column names for table message.
 type MessageColumns struct {
-	SenderUserId string //
-	ChannelId    string //
-	Content      string //
-	Attachment   string //
-	SendDate     string //
-	DeletedAt    string //
-	MessageId    string //
-	ServerId     string //
+	MessageId    string // 消息id
+	ServerId     string // 服务器id
+	ChannelId    string // 频道id
+	SenderUserId string // 发送者id
+	Content      string // 内容
+	Attachment   string // 引用
+	SendDate     string // 发送日期
+	DeletedAt    string // 删除日期
 }
 
 // messageColumns holds the columns for table message.
 var messageColumns = MessageColumns{
-	SenderUserId: "sender_user_id",
+	MessageId:    "message_id",
+	ServerId:     "server_id",
 	ChannelId:    "channel_id",
+	SenderUserId: "sender_user_id",
 	Content:      "content",
 	Attachment:   "attachment",
 	SendDate:     "send_date",
 	DeletedAt:    "deleted_at",
-	MessageId:    "message_id",
-	ServerId:     "server_id",
 }
 
 // NewMessageDao creates and returns a new DAO object for table data access.

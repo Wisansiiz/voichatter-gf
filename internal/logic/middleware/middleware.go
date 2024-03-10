@@ -1,15 +1,14 @@
 package middleware
 
 import (
+	"encoding/json"
+	"github.com/goflyfox/gtoken/gtoken"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gctx"
-	"strings"
-	"voichatter/internal/logic/jwt"
-	"voichatter/internal/model"
-	"voichatter/internal/service"
-
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/gorilla/websocket"
+	"voichatter/internal/service"
 )
 
 type (
@@ -24,65 +23,44 @@ func New() service.IMiddleware {
 	return &sMiddleware{}
 }
 
-// Ctx injects custom business context variable into context of current request.
-func (s *sMiddleware) Ctx(r *ghttp.Request) {
-	customCtx := &model.Context{
-		Session: r.Session,
+type Msg struct {
+	Code string         `json:"code"`
+	Data map[string]any `json:"data"`
+}
+
+// WebSocketAuth websocket鉴权
+func (s *sMiddleware) WebSocketAuth(gfToken *gtoken.GfToken, r *ghttp.Request, conn *websocket.Conn) {
+	var currentUserID string
+	// 接收和处理消息
+	var msg Msg
+	_, p, err := conn.ReadMessage()
+	if err != nil {
+		return
 	}
-	service.BizCtx().Init(r, customCtx)
-	if user := service.Session().GetUser(r.Context()); user != nil {
-		customCtx.User = &model.ContextUser{
-			UserId:   user.UserId,
-			Username: user.Username,
+	if err = json.Unmarshal(p, &msg); err != nil {
+		return
+	}
+	if msg.Code == "authorization" {
+		token := msg.Data["token"]
+		rep := gfToken.DecryptToken(r.Context(), token.(string)).Data
+		m := gconv.Map(rep)
+		key := m["userKey"]
+		if key == nil {
+			r.SetError(gerror.New("未登录"))
+			r.Exit()
 		}
+		jsonBytes, _ := json.Marshal(g.Map{
+			"code": "authorization",
+			"data": g.Map{
+				"userId": key,
+			},
+		})
+		if err = conn.WriteMessage(websocket.TextMessage, jsonBytes); err != nil {
+			r.SetError(gerror.New("出错了"))
+			r.Exit()
+		}
+		currentUserID = gconv.String(key)
 	}
-	// Continue execution of next middleware.
-	r.Middleware.Next()
-}
-
-// CORS allows Cross-origin resource sharing.
-func (s *sMiddleware) CORS(r *ghttp.Request) {
-	r.Response.CORSDefault()
-	r.Middleware.Next()
-}
-
-// Auth 验证是否登录
-func (s *sMiddleware) Auth(r *ghttp.Request) {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		err := gerror.New("请求头中auth为空")
-		r.SetError(err)
-		r.Exit()
-	}
-
-	parts := strings.SplitN(authHeader, " ", 2)
-	if !(len(parts) == 2 && parts[0] == "Bearer") {
-		err := gerror.New("请求头中auth格式有误")
-		r.SetError(err)
-		r.Exit()
-	}
-
-	_, err := jwt.ParseToken(parts[1])
-	if err != nil {
-		err = gerror.New("无效的Token")
-		r.SetError(err)
-		r.Exit()
-	}
-
-	token := parts[1]
-	var ctx = gctx.New()
-	result, err := g.Redis().Get(ctx, token)
-	if err != nil {
-		err = gerror.New("redis出错")
-		r.SetError(err)
-		r.Exit()
-	}
-
-	if !result.IsNil() {
-		err = gerror.New("Token在黑名单中")
-		r.SetError(err)
-		r.Exit()
-	}
-
+	r.SetCtxVar("userId", currentUserID)
 	r.Middleware.Next()
 }

@@ -2,10 +2,12 @@ package chat
 
 import (
 	"encoding/json"
+	"github.com/goflyfox/gtoken/gtoken"
+	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gorilla/websocket"
-	"log"
+	"voichatter/internal/service"
 )
 
 var (
@@ -18,17 +20,20 @@ type Msg struct {
 	Data map[string]any `json:"data"`
 }
 
-func HandleWebSocket(r *ghttp.Request) {
+func GroupChat(gfToken *gtoken.GfToken, r *ghttp.Request) {
 	ws, err := r.WebSocket()
 	if err != nil {
+		r.SetError(gerror.New("websocket error"))
 		r.Exit()
 	}
 	conn := ws.Conn
 	defer r.Exit()
 
+	// 验证身份
+	service.Middleware().WebSocketAuth(gfToken, r, conn)
+	currentUserId := r.GetCtxVar("userId").String()
 	channelId := r.GetQuery("channelId").String()
-	currentUserID := r.GetQuery("id").String()
-	clients[conn] = currentUserID
+	clients[conn] = currentUserId
 	// 接收和处理消息
 	for {
 		var msg Msg
@@ -42,31 +47,25 @@ func HandleWebSocket(r *ghttp.Request) {
 		if msg.Code == "offer" {
 			targetId := msg.Data["targetId"]
 			offer := msg.Data["offer"]
-			broadcastMessage(targetId, currentUserID, "offer", "offer", offer)
+			broadcastRTCMessage(targetId, currentUserId, "offer", "offer", offer)
 		} else if msg.Code == "answer" {
 			targetId := msg.Data["targetId"]
 			answer := msg.Data["answer"]
-			broadcastMessage(targetId, currentUserID, "answer", "answer", answer)
+			broadcastRTCMessage(targetId, currentUserId, "answer", "answer", answer)
 		} else if msg.Code == "icecandidate" {
 			targetId := msg.Data["targetId"]
 			candidate := msg.Data["candidate"]
-			broadcastMessage(targetId, currentUserID, "icecandidate", "candidate", candidate)
+			broadcastRTCMessage(targetId, currentUserId, "icecandidate", "candidate", candidate)
 		} else if msg.Code == "join_group" {
 			groupChannels[channelId] = append(groupChannels[channelId], conn)
-			if broadcastGroups(msg.Code, channelId, conn, currentUserID) {
+			if broadcastGroups(msg.Code, channelId, conn, currentUserId) {
 				return
 			}
 		} else if msg.Code == "leave_group" {
-			if broadcastGroups(msg.Code, channelId, conn, currentUserID) {
+			if broadcastGroups(msg.Code, channelId, conn, currentUserId) {
 				return
 			}
 			break
-		} else {
-			jsonBytes, _ := json.Marshal(msg)
-			if err := conn.WriteMessage(websocket.TextMessage, jsonBytes); err != nil {
-				log.Println("出错了")
-				r.Exit()
-			}
 		}
 	}
 
@@ -107,7 +106,7 @@ func broadcastGroups(code string, channelId string, conn *websocket.Conn, curren
 	return false
 }
 
-func broadcastMessage(targetId any, currentUserID string, code string, dataName string, data any) {
+func broadcastRTCMessage(targetId any, currentUserID string, code string, dataName string, data any) {
 	for clientConn, userId := range clients {
 		if userId == targetId.(string) {
 			message := g.Map{
