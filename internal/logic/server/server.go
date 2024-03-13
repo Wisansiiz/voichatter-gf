@@ -122,3 +122,32 @@ func (s *sServer) ServerDel(ctx context.Context, serverId uint64) (res *v1.Serve
 	}
 	return nil, nil
 }
+
+func (s *sServer) ServerModifyName(ctx context.Context, serverId uint64, serverName string) (res *v1.ServerModifyNameRes, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	count, err := dao.Server.Ctx(ctx).Where("server_id = ? AND creator_user_id = ?", serverId, userId).Count()
+	if err != nil {
+		return nil, err
+	}
+	if count == 0 {
+		return nil, gerror.New("权限不足")
+	}
+	result, err := dao.Server.Ctx(ctx).Update(g.Map{
+		"server_name": serverName,
+	}, "server_id = ?", serverId)
+	if err != nil {
+		return nil, err
+	}
+	row, _ := result.RowsAffected()
+	if row == 0 {
+		return nil, gerror.New("修改失败或名字相同")
+	}
+	var server *model.Server
+	err = dao.Server.Ctx(ctx).Where("server_id = ?", serverId).Scan(&server)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ServerModifyNameRes{
+		ServerInfo: server,
+	}, nil
+}
