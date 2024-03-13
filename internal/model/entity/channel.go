@@ -17,5 +17,5 @@ type Channel struct {
 	CreationDate *gtime.Time `json:"creation_date"  ` // 服务器创建时间
 	CreateUserId uint64      `json:"create_user_id" ` // 服务器创建者id
 	DeletedAt    *gtime.Time `json:"deleted_at"     ` // 删除时间
-	GroupId      uint64      `json:"group_id"       ` // 分组表
+	GroupId      *uint64     `json:"group_id"       ` // 分组表
 }
