@@ -70,6 +70,7 @@ var (
 					LogoutPath:       "/logout",
 					AuthAfterFunc:    authFunc,
 					LoginAfterFunc:   loginAfterFunc,
+					MultiLogin:       true,
 					AuthExcludePaths: g.SliceStr{"/register, /login"},
 					GlobalMiddleware: true, // 开启全局拦截，默认关闭
 				}
