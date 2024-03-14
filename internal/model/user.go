@@ -14,8 +14,8 @@ type UserCreateInput struct {
 
 type UserSignInInput struct {
 	g.Meta       `path:"/login" method:"post" tags:"" summary:"Sign in with exist account"`
-	Username     string `p:"username" v:"required|length:4,30#请输入账号|账号长度为:{min}到:{max}位"`
-	PasswordHash string `p:"password" v:"required|length:6,30#请输入密码|密码长度不够"`
+	Username     string `p:"username" v:"required|length:4,20#请输入账号|账号长度为:{min}到:{max}位"`
+	PasswordHash string `p:"password" v:"required|length:6,20#请输入密码|密码长度不够"`
 }
 
 type UserList4Server struct {

@@ -8,7 +8,7 @@ import (
 type ServerModifyNameReq struct {
 	g.Meta     `path:"/server/{serverId}" method:"put" tags:"ServerService" summary:"servers"`
 	ServerId   uint64 `p:"serverId" v:"required"`
-	ServerName string `p:"serverName" v:"required|length:4,30#请输入服务器名|服务器名长度为:{min}到:{max}位"`
+	ServerName string `p:"serverName" v:"required|length:4,10#请输入服务器名|服务器名长度为:{min}到:{max}位"`
 }
 
 type ServerModifyNameRes struct {

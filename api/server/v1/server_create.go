@@ -7,9 +7,9 @@ import (
 
 type ServerCreateReq struct {
 	g.Meta       `path:"/servers" method:"post" tags:"ServerService" summary:""`
-	ServerName   string `p:"server_name" v:"required|length:4,30#请输入服务器名|服务器名长度为:{min}到:{max}位"`
-	ServerType   string `p:"server_type" v:"required#请输入服务器类型"`
-	ServerImgUrl string `p:"server_img_url"`
+	ServerName   string `p:"serverName" v:"required|length:4,10#请输入服务器名|服务器名长度为:{min}到:{max}位"`
+	ServerType   string `p:"serverType" v:"required#请输入服务器类型"`
+	ServerImgUrl string `p:"serverImgUrl"`
 }
 type ServerCreateRes struct {
 	Server *model.Server `json:"server"`
