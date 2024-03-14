@@ -8,6 +8,8 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gorilla/websocket"
+	"voichatter/internal/dao"
+	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
 )
 
@@ -61,6 +63,14 @@ func (s *sMiddleware) WebSocketAuth(gfToken *gtoken.GfToken, r *ghttp.Request, c
 		}
 		currentUserID = gconv.String(key)
 	}
+	var user entity.User
+	err = dao.User.Ctx(r.Context()).Where("user_id = ?", gconv.Uint64(currentUserID)).Scan(&user)
+	if err != nil {
+		return
+	}
 	r.SetCtxVar("userId", currentUserID)
+	r.SetCtxVar("email", user.Email)
+	r.SetCtxVar("avatarUrl", user.AvatarUrl)
+	r.SetCtxVar("username", user.Username)
 	r.Middleware.Next()
 }
