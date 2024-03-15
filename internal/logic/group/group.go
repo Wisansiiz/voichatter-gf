@@ -21,7 +21,7 @@ func New() service.IGroup {
 	return &sGroup{}
 }
 
-func (s sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupListRes, err error) {
+func (s *sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupListRes, err error) {
 	userId := gconv.Uint64(ctx.Value("userId"))
 	count, err := dao.Member.Ctx(ctx).Where("server_id = ? AND user_id = ?", serverId, userId).Count()
 	if err != nil {
@@ -39,7 +39,7 @@ func (s sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupLi
 	}
 	for i, group := range groupList {
 		err = dao.Channel.Ctx(ctx).
-			Where("group_id", group.GroupId).
+			Where("group_id = ?", group.GroupId).
 			Scan(&groupList[i].ChannelList)
 		if err != nil {
 			return nil, err
@@ -56,4 +56,19 @@ func (s sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupLi
 		ChannelList: &channelList,
 		GroupList:   &groupList,
 	}, nil
+}
+
+func (s *sGroup) GroupCreate(ctx context.Context, req *v1.GroupCreateReq) (res *v1.GroupCreateRes, err error) {
+
+	panic("implement me")
+}
+
+func (s *sGroup) GroupModify(ctx context.Context, req *v1.GroupModifyReq) (res *v1.GroupModifyRes, err error) {
+
+	panic("implement me")
+}
+
+func (s *sGroup) GroupRemove(ctx context.Context, req *v1.GroupRemoveReq) (res *v1.GroupRemoveRes, err error) {
+
+	panic("implement me")
 }
