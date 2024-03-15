@@ -12,4 +12,6 @@ import (
 
 type IChannelV1 interface {
 	ChannelCreate(ctx context.Context, req *v1.ChannelCreateReq) (res *v1.ChannelCreateRes, err error)
+	ChannelModify(ctx context.Context, req *v1.ChannelModifyReq) (res *v1.ChannelModifyRes, err error)
+	ChannelRemove(ctx context.Context, req *v1.ChannelRemoveReq) (res *v1.ChannelRemoveRes, err error)
 }

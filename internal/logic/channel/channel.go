@@ -2,7 +2,6 @@ package channel
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	v1 "voichatter/api/channel/v1"
@@ -10,6 +9,7 @@ import (
 	"voichatter/internal/model"
 	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
+	"voichatter/utility/errResponse"
 )
 
 type (
@@ -31,18 +31,68 @@ func (s *sChannel) ChannelCreate(ctx context.Context, in model.ChannelCreateInpu
 		WhereOr("s_permissions = ?", "owner").
 		Count()
 	if err != nil {
-		return nil, err
+		return nil, errResponse.DbOperationErrorDefault()
 	}
 	if count == 0 {
-		return nil, gerror.New("权限不足")
+		return nil, errResponse.OperationFailed("权限不足")
 	}
-	_, err = dao.Channel.Ctx(ctx).
-		Insert(&entity.Channel{
+	channelId, err := dao.Channel.Ctx(ctx).
+		InsertAndGetId(&entity.Channel{
 			ServerId:     in.ServerId,
 			ChannelName:  in.ChannelName,
 			Type:         in.Type,
 			CreateUserId: userId,
 			CreationDate: gtime.Now(),
 		})
+	if err != nil {
+		return nil, errResponse.DbOperationError("新增失败")
+	}
+	return &v1.ChannelCreateRes{
+		Channel: &model.ChannelInfo{
+			ChannelId:    gconv.Uint64(channelId),
+			ChannelName:  in.ChannelName,
+			Type:         in.Type,
+			ServerId:     in.ServerId,
+			CreateUserId: userId,
+		},
+	}, nil
+}
+
+func (s *sChannel) ChannelModify(ctx context.Context, in model.ChannelModifyInput) (res *v1.ChannelModifyRes, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	count, err := dao.Server.Ctx(ctx).Where("server_id = ? AND creator_user_id = ?", in.ServerId, userId).Count()
+	if err != nil || count == 0 {
+		return nil, errResponse.DbOperationError("权限不足")
+	}
+	update, err := dao.Channel.Ctx(ctx).
+		Fields("channel_name").
+		Data(&entity.Channel{ChannelName: in.ChannelName}).
+		Where("channel_id = ?", in.ChannelId).
+		Update()
+	if err != nil || update == nil {
+		return nil, errResponse.DbOperationError("修改失败")
+	}
+	var channelInfo model.ChannelInfo
+	err = dao.Channel.Ctx(ctx).Where("channel_id = ?", in.ChannelId).Scan(&channelInfo)
+	if err != nil {
+		return nil, errResponse.DbOperationErrorDefault()
+	}
+	return &v1.ChannelModifyRes{
+		Channel: &channelInfo,
+	}, nil
+}
+
+func (s *sChannel) ChannelRemove(ctx context.Context, in model.ChannelRemoveInput) (res *v1.ChannelRemoveRes, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	count, err := dao.Server.Ctx(ctx).Where("server_id = ? AND creator_user_id = ?", in.ServerId, userId).Count()
+	if err != nil || count == 0 {
+		return nil, errResponse.DbOperationError("权限不足")
+	}
+	result, err := dao.Channel.Ctx(ctx).
+		Where("channel_id = ?", in.ChannelId).
+		Delete()
+	if err != nil || result == nil {
+		return nil, errResponse.DbOperationError("删除失败")
+	}
 	return
 }

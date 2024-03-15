@@ -14,6 +14,8 @@ import (
 type (
 	IChannel interface {
 		ChannelCreate(ctx context.Context, in model.ChannelCreateInput) (res *v1.ChannelCreateRes, err error)
+		ChannelModify(ctx context.Context, in model.ChannelModifyInput) (res *v1.ChannelModifyRes, err error)
+		ChannelRemove(ctx context.Context, in model.ChannelRemoveInput) (res *v1.ChannelRemoveRes, err error)
 	}
 )
 

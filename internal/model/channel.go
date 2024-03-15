@@ -13,3 +13,14 @@ type ChannelInfo struct {
 	Type         string `json:"type"           ` // 服务器类型
 	CreateUserId uint64 `json:"createUserId" `   // 服务器创建者id
 }
+
+type ChannelModifyInput struct {
+	ServerId    uint64 `json:"serverId"`
+	ChannelId   uint64 `json:"channelId"`
+	ChannelName string `json:"channelName"`
+}
+
+type ChannelRemoveInput struct {
+	ServerId  uint64 `json:"serverId"`
+	ChannelId uint64 `json:"channelId"`
+}
