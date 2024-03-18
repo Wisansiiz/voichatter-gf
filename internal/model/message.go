@@ -8,11 +8,13 @@ type Message struct {
 }
 
 type MessageInfo struct {
-	MessageId    uint64      `json:"message_id"     `
-	SenderUserId uint64      `json:"sender_user_id" ` //
-	ChannelId    uint64      `json:"channel_id"     ` //
-	Content      string      `json:"content"        ` //
-	Attachment   string      `json:"attachment"     ` //
-	SendDate     *gtime.Time `json:"send_date"      ` //
-	ServerId     uint64      `json:"server_id"      ` //
+	MessageId    uint64      `json:"messageId"`
+	SenderUserId uint64      `json:"senderUserId"`
+	ChannelId    uint64      `json:"channelId"`
+	Content      string      `json:"content"`
+	Attachment   string      `json:"attachment"`
+	SendDate     *gtime.Time `json:"sendDate"`
+	ServerId     uint64      `json:"serverId"`
+	AvatarUrl    string      `json:"avatarUrl"`
+	Username     string      `json:"senderName"`
 }

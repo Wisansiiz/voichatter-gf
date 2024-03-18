@@ -6,7 +6,7 @@ import (
 )
 
 type ServerJoinReq struct {
-	g.Meta   `path:"/servers/{serverId}" method:"post" tags:"ServerService" summary:""`
+	g.Meta   `path:"/servers/{serverId}" method:"post" tags:"ServerService" summary:"加入服务器"`
 	ServerId uint64 `p:"serverId" v:"required"`
 }
 

@@ -83,16 +83,12 @@ func (s *sUser) LoginFunc(r *ghttp.Request) (string, interface{}) {
 			Username: in.Username,
 		}).
 		Scan(&u)
-	if err != nil {
-		r.SetError(gerror.New(`账号或密码错误`))
-		r.Exit()
-	}
-	if u == nil {
-		r.SetError(gerror.New(`账号或密码错误`))
+	if err != nil || u == nil {
+		r.SetError(gerror.New("账号或密码错误"))
 		r.Exit()
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(in.PasswordHash)); err != nil {
-		r.SetError(gerror.New(`账号或密码错误`))
+		r.SetError(gerror.New("账号或密码错误"))
 		r.Exit()
 	}
 	_, err = g.DB().Model(entity.User{}).

@@ -87,7 +87,7 @@ func (s *sServer) ServerJoin(ctx context.Context, serverId uint64) (res *v1.Serv
 	}
 	userId := gconv.Uint64(ctx.Value("userId"))
 	// 判断是否已经加入过服务器
-	count, err := g.DB().Model("member").
+	count, err := dao.Member.Ctx(ctx).
 		Where("server_id = ? AND user_id = ?", serverId, userId).
 		Count()
 	if err != nil {
@@ -119,7 +119,11 @@ func (s *sServer) ServerDel(ctx context.Context, serverId uint64) (res *v1.Serve
 		Delete()
 	row, _ := result.RowsAffected()
 	if err != nil || row == 0 {
-		return nil, errResponse.OperationFailed("查询失败, 权限不足")
+		return nil, errResponse.OperationFailed("权限不足")
+	}
+	result, err = dao.Member.Ctx(ctx).Delete("server_id = ?", serverId)
+	if err != nil {
+		return nil, errResponse.DbOperationError("删除成员失败")
 	}
 	return nil, nil
 }
