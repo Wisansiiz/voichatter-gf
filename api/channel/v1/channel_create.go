@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/gogf/gf/v2/frame/g"
+	"voichatter/internal/model"
 )
 
 type ChannelCreateReq struct {
@@ -11,4 +12,6 @@ type ChannelCreateReq struct {
 	Type        string `p:"type" v:"required"`
 }
 
-type ChannelCreateRes struct{}
+type ChannelCreateRes struct {
+	Channel *model.ChannelInfo `json:"channel"`
+}
