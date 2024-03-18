@@ -1,21 +1,23 @@
 package chat
 
 import (
-	"github.com/goflyfox/gtoken/gtoken"
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gorilla/websocket"
 	"voichatter/internal/dao"
+	"voichatter/internal/model"
 	"voichatter/internal/model/entity"
-	"voichatter/internal/service"
 )
 
 var (
 	rooms = make(map[uint64][]*websocket.Conn)
 )
 
-func MessageSend(gfToken *gtoken.GfToken, r *ghttp.Request) {
+func MessageSend(r *ghttp.Request) {
 	ws, err := r.WebSocket()
 	if err != nil {
 		r.SetError(gerror.New("websocket error"))
@@ -24,8 +26,6 @@ func MessageSend(gfToken *gtoken.GfToken, r *ghttp.Request) {
 	conn := ws.Conn
 	defer r.Exit()
 
-	// 验证身份
-	service.Middleware().WebSocketAuth(gfToken, r, conn)
 	userId := r.GetCtxVar("userId").Uint64()
 	// 从URL参数获取频道号
 	serverId := r.GetQuery("serverId").Uint64()
@@ -40,6 +40,11 @@ func MessageSend(gfToken *gtoken.GfToken, r *ghttp.Request) {
 		}
 		// 持久化消息到数据库
 		content := string(p)
+		str, _ := gjson.DecodeToJson(p)
+		g.Dump(str.Map()["data"])
+		if gconv.String(str.Map()["data"]) != "" {
+			content = gconv.String(str.Map()["data"])
+		}
 		_, err = dao.Message.Ctx(r.Context()).Insert(
 			&entity.Message{
 				SenderUserId: userId,
@@ -53,8 +58,19 @@ func MessageSend(gfToken *gtoken.GfToken, r *ghttp.Request) {
 			r.SetError(gerror.New("持久化出错"))
 			return
 		}
+		var messageInfo = model.MessageInfo{
+			MessageId:    gconv.Uint64(gconv.String(str.Map()["messageId"])),
+			ChannelId:    channelId,
+			Content:      content,
+			ServerId:     serverId,
+			Attachment:   "",
+			AvatarUrl:    r.GetCtxVar("avatarUrl").String(),
+			SenderUserId: userId,
+			Username:     r.GetCtxVar("username").String(),
+			SendDate:     gtime.Now(),
+		}
 		// 将消息广播给房间内的所有客户端
-		go broadcastMessage(channelId, p)
+		go broadcastMessage(channelId, gconv.Bytes(g.Map{"message": messageInfo}))
 	}
 
 	// 在连接关闭时，将其从房间中移除

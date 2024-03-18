@@ -72,21 +72,16 @@ var (
 					LoginAfterFunc:   loginAfterFunc,
 					MultiLogin:       true,
 					AuthExcludePaths: g.SliceStr{"/register, /login"},
-					GlobalMiddleware: true, // 开启全局拦截，默认关闭
 				}
-				group.Group("/api", func(group *ghttp.RouterGroup) {
-					group.GET("/yy", func(r *ghttp.Request) {
-						chat.GroupChat(gfToken, r)
-					})
-					group.GET("/wz", func(r *ghttp.Request) {
-						chat.MessageSend(gfToken, r)
-					})
-				})
 				group.Group("/", func(group *ghttp.RouterGroup) {
 					err := gfToken.Middleware(ctx, group)
 					if err != nil {
 						panic(err)
 					}
+					group.Group("/api", func(group *ghttp.RouterGroup) {
+						group.GET("/wz", chat.MessageSend)
+						group.GET("/yy", chat.GroupChat)
+					})
 					group.Bind(
 						sgroup.NewV1(),
 						user.NewV1(),
@@ -122,6 +117,7 @@ func authFunc(r *ghttp.Request, respData gtoken.Resp) {
 	}
 	r.SetCtxVar("userId", userInfo.UserId)
 	r.SetCtxVar("username", userInfo.Username)
+	r.SetCtxVar("avatarUrl", userInfo.AvatarUrl)
 	r.Middleware.Next()
 }
 

@@ -2,12 +2,10 @@ package chat
 
 import (
 	"encoding/json"
-	"github.com/goflyfox/gtoken/gtoken"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gorilla/websocket"
-	"voichatter/internal/service"
 )
 
 var (
@@ -20,7 +18,7 @@ type Msg struct {
 	Data map[string]any `json:"data"`
 }
 
-func GroupChat(gfToken *gtoken.GfToken, r *ghttp.Request) {
+func GroupChat(r *ghttp.Request) {
 	ws, err := r.WebSocket()
 	if err != nil {
 		r.SetError(gerror.New("websocket error"))
@@ -29,8 +27,6 @@ func GroupChat(gfToken *gtoken.GfToken, r *ghttp.Request) {
 	conn := ws.Conn
 	defer r.Exit()
 
-	// 验证身份
-	service.Middleware().WebSocketAuth(gfToken, r, conn)
 	currentUserId := r.GetCtxVar("userId").String()
 	channelId := r.GetQuery("channelId").String()
 	clients[conn] = currentUserId

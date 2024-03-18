@@ -5,16 +5,8 @@
 
 package service
 
-import (
-	"github.com/goflyfox/gtoken/gtoken"
-	"github.com/gogf/gf/v2/net/ghttp"
-	"github.com/gorilla/websocket"
-)
-
 type (
 	IMiddleware interface {
-		// WebSocketAuth websocket鉴权
-		WebSocketAuth(gfToken *gtoken.GfToken, r *ghttp.Request, conn *websocket.Conn)
 	}
 )
 
