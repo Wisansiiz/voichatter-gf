@@ -114,7 +114,7 @@ func broadcastRTCMessage(targetId any, currentUserID string, code string, data a
 					code:     data,
 				},
 			}
-			jsonBytes := gconv.Bytes(message)
+			jsonBytes, _ := gjson.Marshal(message)
 			if err := clientConn.WriteMessage(websocket.TextMessage, jsonBytes); err != nil {
 				return
 			}
