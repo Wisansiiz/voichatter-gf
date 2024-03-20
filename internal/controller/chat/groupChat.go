@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -94,7 +95,7 @@ func broadcastGroups(code string, channelId string, currentUserID string) bool {
 					"fromId": currentUserID,
 				},
 			}
-			jsonBytes := gconv.Bytes(message)
+			jsonBytes, _ := gjson.Marshal(message)
 			if err := numbers.WriteMessage(websocket.TextMessage, jsonBytes); err != nil {
 				return true
 			}
