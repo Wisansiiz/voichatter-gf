@@ -16,7 +16,7 @@ type Msg struct {
 }
 
 var (
-	clients       = make(map[*websocket.Conn]string)
+	clients       = make(map[string]*websocket.Conn)
 	groupChannels = make(map[string][]*websocket.Conn)
 	msg           Msg
 	mu            sync.RWMutex
@@ -35,8 +35,7 @@ func GroupChat(r *ghttp.Request) {
 	currentUserId := r.GetCtxVar("userId").String()
 	channelId := r.GetQuery("serverId").String() + r.GetQuery("channelId").String()
 	mu.Lock()
-	clients[conn] = currentUserId
-	groupChannels[channelId] = append(groupChannels[channelId], conn)
+	clients[currentUserId] = conn
 	mu.Unlock()
 	// 接收和处理消息
 	for {
@@ -60,7 +59,9 @@ func GroupChat(r *ghttp.Request) {
 			candidate := msg.Data["candidate"]
 			broadcastRTCMessage(targetId, currentUserId, candidate)
 		} else if msg.Code == "join_group" {
-			//groupChannels[channelId] = append(groupChannels[channelId], conn)
+			mu.Lock()
+			groupChannels[channelId] = append(groupChannels[channelId], conn)
+			mu.Unlock()
 			if broadcastGroups(channelId, conn, currentUserId) {
 				return
 			}
@@ -89,9 +90,9 @@ func cleanUp(channelId string, conn *websocket.Conn) {
 		}
 	}
 	// 在连接关闭时，将其从连接中移除
-	for clientConn := range clients {
+	for id, clientConn := range clients {
 		if clientConn == conn {
-			delete(clients, clientConn)
+			delete(clients, id)
 		}
 	}
 }
@@ -120,7 +121,7 @@ func broadcastGroups(channelId string, conn *websocket.Conn, currentUserID strin
 func broadcastRTCMessage(targetId any, currentUserID string, data any) {
 	mu.RLock()
 	defer mu.RUnlock()
-	for clientConn, userId := range clients {
+	for userId, clientConn := range clients {
 		if userId == gconv.String(targetId) {
 			message := &Msg{
 				Code: msg.Code,
