@@ -12,7 +12,6 @@ import (
 var (
 	clients       = make(map[*websocket.Conn]string)
 	groupChannels = make(map[string][]*websocket.Conn)
-	conn          *websocket.Conn
 )
 
 type Msg struct {
@@ -26,7 +25,7 @@ func GroupChat(r *ghttp.Request) {
 		r.SetError(gerror.New("websocket error"))
 		r.Exit()
 	}
-	conn = ws.Conn
+	conn := ws.Conn
 	defer r.Exit()
 
 	currentUserId := r.GetCtxVar("userId").String()
@@ -39,7 +38,7 @@ func GroupChat(r *ghttp.Request) {
 		if err != nil {
 			break
 		}
-		if err = gconv.Struct(p, &msg); err != nil {
+		if err = gjson.Unmarshal(p, &msg); err != nil {
 			break
 		}
 		if msg.Code == "offer" {
@@ -50,17 +49,17 @@ func GroupChat(r *ghttp.Request) {
 			targetId := msg.Data["targetId"]
 			answer := msg.Data["answer"]
 			broadcastRTCMessage(targetId, currentUserId, "answer", answer)
-		} else if msg.Code == "icecandidate" {
+		} else if msg.Code == "candidate" {
 			targetId := msg.Data["targetId"]
 			candidate := msg.Data["candidate"]
-			broadcastRTCMessage(targetId, currentUserId, "icecandidate", candidate)
+			broadcastRTCMessage(targetId, currentUserId, "candidate", candidate)
 		} else if msg.Code == "join_group" {
 			groupChannels[channelId] = append(groupChannels[channelId], conn)
-			if broadcastGroups(msg.Code, channelId, currentUserId) {
+			if broadcastGroups(msg.Code, channelId, conn, currentUserId) {
 				return
 			}
 		} else if msg.Code == "leave_group" {
-			if broadcastGroups(msg.Code, channelId, currentUserId) {
+			if broadcastGroups(msg.Code, channelId, conn, currentUserId) {
 				return
 			}
 			break
@@ -85,7 +84,7 @@ func GroupChat(r *ghttp.Request) {
 	}
 }
 
-func broadcastGroups(code string, channelId string, currentUserID string) bool {
+func broadcastGroups(code string, channelId string, conn *websocket.Conn, currentUserID string) bool {
 	connections := groupChannels[channelId]
 	for _, numbers := range connections {
 		if conn != numbers {
@@ -106,7 +105,7 @@ func broadcastGroups(code string, channelId string, currentUserID string) bool {
 
 func broadcastRTCMessage(targetId any, currentUserID string, code string, data any) {
 	for clientConn, userId := range clients {
-		if userId == targetId.(string) {
+		if userId == gconv.String(targetId) {
 			message := g.Map{
 				"code": code,
 				"data": g.Map{
