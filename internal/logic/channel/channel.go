@@ -6,6 +6,7 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	v1 "voichatter/api/channel/v1"
 	"voichatter/internal/dao"
+	"voichatter/internal/logic/cache"
 	"voichatter/internal/model"
 	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
@@ -47,6 +48,11 @@ func (s *sChannel) ChannelCreate(ctx context.Context, in model.ChannelCreateInpu
 	if err != nil {
 		return nil, errResponse.DbOperationError("新增失败")
 	}
+	// 删除缓存
+	err = cache.DelGroupVoCache(ctx, in.ServerId)
+	if err != nil {
+		return nil, err
+	}
 	return &v1.ChannelCreateRes{
 		Channel: &model.ChannelInfo{
 			ChannelId:    gconv.Uint64(channelId),
@@ -63,6 +69,11 @@ func (s *sChannel) ChannelModify(ctx context.Context, in model.ChannelModifyInpu
 	count, err := dao.Server.Ctx(ctx).Where("server_id = ? AND creator_user_id = ?", in.ServerId, userId).Count()
 	if err != nil || count == 0 {
 		return nil, errResponse.DbOperationError("权限不足")
+	}
+	// 删除缓存
+	err = cache.DelGroupVoCache(ctx, in.ServerId)
+	if err != nil {
+		return nil, err
 	}
 	update, err := dao.Channel.Ctx(ctx).
 		Fields("channel_name").
@@ -87,6 +98,11 @@ func (s *sChannel) ChannelRemove(ctx context.Context, in model.ChannelRemoveInpu
 	count, err := dao.Server.Ctx(ctx).Where("server_id = ? AND creator_user_id = ?", in.ServerId, userId).Count()
 	if err != nil || count == 0 {
 		return nil, errResponse.DbOperationError("权限不足")
+	}
+	// 删除缓存
+	err = cache.DelGroupVoCache(ctx, in.ServerId)
+	if err != nil {
+		return nil, err
 	}
 	result, err := dao.Channel.Ctx(ctx).
 		Where("channel_id = ?", in.ChannelId).

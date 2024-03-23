@@ -2,11 +2,14 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	v1 "voichatter/api/server/v1"
+	"voichatter/internal/consts"
 	"voichatter/internal/dao"
+	"voichatter/internal/logic/cache"
 	"voichatter/internal/model"
 	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
@@ -26,7 +29,23 @@ func New() service.IServer {
 }
 func (s *sServer) ServerList(ctx context.Context, _ *v1.ServerListReq) (res *v1.ServerListRes, err error) {
 	userId := gconv.Uint64(ctx.Value("userId"))
+
+	serverList := fmt.Sprintf("%s-%d", consts.ServerList, userId)
+
 	var servers []model.Server
+	get, err := g.Redis().Get(ctx, serverList)
+	if err != nil {
+		return nil, errResponse.DbOperationError("查询服务器列表出错了")
+	}
+	err = gconv.Struct(get, &servers)
+	if err != nil {
+		return nil, errResponse.OperationFailed("服务器列表转换出错")
+	}
+	if servers != nil {
+		return &v1.ServerListRes{
+			ServerList: &servers,
+		}, nil
+	}
 	err = g.Model("server s").
 		Fields("s.*").
 		LeftJoin("member m", "s.server_id = m.server_id").
@@ -35,9 +54,13 @@ func (s *sServer) ServerList(ctx context.Context, _ *v1.ServerListReq) (res *v1.
 	if err != nil {
 		return nil, errResponse.DbOperationError("查询服务器列表出错了")
 	}
+	err = g.Redis().SetEX(ctx, serverList, servers, int64(gtime.D))
+	if err != nil {
+		return nil, errResponse.DbOperationError("设置服务器列表缓存出错了")
+	}
 	return &v1.ServerListRes{
 		ServerList: &servers,
-	}, err
+	}, nil
 }
 
 func (s *sServer) ServerCreate(ctx context.Context, in model.ServerCreateInput) (res *v1.ServerCreateRes, err error) {
@@ -63,6 +86,11 @@ func (s *sServer) ServerCreate(ctx context.Context, in model.ServerCreateInput) 
 	if err != nil {
 		return nil, errResponse.DbOperationError("查询出错")
 	}
+
+	if err = cache.DelServerListCache(ctx, userId); err != nil {
+		return nil, err
+	}
+
 	return &v1.ServerCreateRes{
 		Server: &model.Server{
 			ServerId:     uint64(lastInsertId),
@@ -125,6 +153,11 @@ func (s *sServer) ServerDel(ctx context.Context, serverId uint64) (res *v1.Serve
 	if err != nil {
 		return nil, errResponse.DbOperationError("删除成员失败")
 	}
+
+	if err = cache.DelServerListCache(ctx, userId); err != nil {
+		return nil, err
+	}
+
 	return nil, nil
 }
 
@@ -152,6 +185,11 @@ func (s *sServer) ServerModifyName(ctx context.Context, serverId uint64, serverN
 	if err != nil {
 		return nil, errResponse.DbOperationError("查询失败")
 	}
+
+	if err = cache.DelServerListCache(ctx, userId); err != nil {
+		return nil, err
+	}
+
 	return &v1.ServerModifyNameRes{
 		ServerInfo: server,
 	}, nil
