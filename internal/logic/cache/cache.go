@@ -34,8 +34,8 @@ func DelGroupVoCache(ctx context.Context, serverId uint64) error {
 	return err
 }
 
-// DelServerListCache 删除缓存
-func DelServerListCache(ctx context.Context, serverId uint64) error {
+// DelServerListsCache 删除缓存
+func DelServerListsCache(ctx context.Context, serverId uint64) error {
 	ids, err := dao.Member.Ctx(ctx).
 		Fields("DISTINCT(user_id)").
 		Where("server_id = ?", serverId).
@@ -47,8 +47,26 @@ func DelServerListCache(ctx context.Context, serverId uint64) error {
 		_, err = g.Redis().Del(ctx,
 			fmt.Sprintf("%s-%d", consts.ServerList, gconv.Uint64(id)))
 		if err != nil {
-			return errResponse.DbOperationError("删除ServerList缓存失败")
+			return errResponse.DbOperationError("删除ServerLists缓存失败")
 		}
+	}
+	return err
+}
+
+func DelServerUsersCache(ctx context.Context, serverId uint64) error {
+	_, err := g.Redis().Del(ctx,
+		fmt.Sprintf("%s-%d", consts.ServerUsers, serverId))
+	if err != nil {
+		return errResponse.DbOperationError("删除ServerList缓存失败")
+	}
+	return err
+}
+
+func DelServerListCache(ctx context.Context, userId uint64) error {
+	_, err := g.Redis().Del(ctx,
+		fmt.Sprintf("%s-%d", consts.ServerList, userId))
+	if err != nil {
+		return errResponse.DbOperationError("删除ServerList缓存失败")
 	}
 	return err
 }
