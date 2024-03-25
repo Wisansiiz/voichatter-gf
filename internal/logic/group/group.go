@@ -10,6 +10,7 @@ import (
 	"voichatter/internal/consts"
 	"voichatter/internal/dao"
 	"voichatter/internal/model"
+	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
 	"voichatter/utility/errResponse"
 )
@@ -97,9 +98,30 @@ func (s *sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupL
 	}, nil
 }
 
-func (s *sGroup) GroupCreate(ctx context.Context, req *v1.GroupCreateReq) (res *v1.GroupCreateRes, err error) {
-
-	panic("implement me")
+func (s *sGroup) GroupCreate(ctx context.Context, in model.GroupCreateInput) (res *v1.GroupCreateRes, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	count, err := dao.Server.Ctx(ctx).Where("server_id = ? AND creator_user_id = ?", in.ServerId, userId).Count()
+	if err != nil {
+		return nil, errResponse.DbOperationError("查询失败")
+	}
+	if count == 0 {
+		return nil, errResponse.OperationFailed("权限不足")
+	}
+	id, err := dao.Group.Ctx(ctx).InsertAndGetId(entity.Group{
+		ServerId:  in.ServerId,
+		GroupName: in.GroupName,
+	})
+	if err != nil {
+		return nil, errResponse.DbOperationError("新增失败")
+	}
+	groupInfo := model.Group{
+		GroupId:   gconv.Uint64(id),
+		ServerId:  in.ServerId,
+		GroupName: in.GroupName,
+	}
+	return &v1.GroupCreateRes{
+		Group: &groupInfo,
+	}, nil
 }
 
 func (s *sGroup) GroupModify(ctx context.Context, req *v1.GroupModifyReq) (res *v1.GroupModifyRes, err error) {
