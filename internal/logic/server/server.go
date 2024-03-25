@@ -87,7 +87,7 @@ func (s *sServer) ServerCreate(ctx context.Context, in model.ServerCreateInput) 
 		return nil, errResponse.DbOperationError("查询出错")
 	}
 
-	if err = cache.DelServerListCache(ctx, userId); err != nil {
+	if err = cache.DelServerListsCache(ctx, uint64(lastInsertId)); err != nil {
 		return nil, err
 	}
 
@@ -135,6 +135,12 @@ func (s *sServer) ServerJoin(ctx context.Context, serverId uint64) (res *v1.Serv
 	if err != nil {
 		return nil, errResponse.DbOperationError("添加成员失败")
 	}
+	if err = cache.DelServerUsersCache(ctx, serverId); err != nil {
+		return nil, err
+	}
+	if err = cache.DelServerListCache(ctx, userId); err != nil {
+		return nil, err
+	}
 	return &v1.ServerJoinRes{
 		Server: server,
 	}, nil
@@ -154,7 +160,7 @@ func (s *sServer) ServerDel(ctx context.Context, serverId uint64) (res *v1.Serve
 		return nil, errResponse.DbOperationError("删除成员失败")
 	}
 
-	if err = cache.DelServerListCache(ctx, userId); err != nil {
+	if err = cache.DelServerListsCache(ctx, serverId); err != nil {
 		return nil, err
 	}
 
@@ -186,7 +192,7 @@ func (s *sServer) ServerModifyName(ctx context.Context, serverId uint64, serverN
 		return nil, errResponse.DbOperationError("查询失败")
 	}
 
-	if err = cache.DelServerListCache(ctx, userId); err != nil {
+	if err = cache.DelServerListsCache(ctx, serverId); err != nil {
 		return nil, err
 	}
 
