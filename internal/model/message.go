@@ -7,6 +7,18 @@ type Message struct {
 	ChannelId uint64
 }
 
+type MessagePagesRes struct {
+	ServerId  uint64
+	ChannelId uint64
+	Page      int
+	PageSize  int
+}
+
+type MessagePagesRep struct {
+	MessageInfo []*MessageInfo `json:"messageInfo"`
+	PageTotal   int            `json:"pageTotal"`
+}
+
 type MessageInfo struct {
 	MessageId    uint64      `json:"messageId"`
 	SenderUserId uint64      `json:"senderUserId"`
