@@ -24,7 +24,12 @@ func MessageSend(r *ghttp.Request) {
 		r.Exit()
 	}
 	conn := ws.Conn
-	defer r.Exit()
+	defer func(ws *ghttp.WebSocket) {
+		err = ws.Close()
+		if err != nil {
+			return
+		}
+	}(ws)
 
 	userId := r.GetCtxVar("userId").Uint64()
 	// 从URL参数获取频道号
@@ -38,9 +43,16 @@ func MessageSend(r *ghttp.Request) {
 		if err != nil {
 			break
 		}
+		//var msg Msg
 		// 持久化消息到数据库
 		content := string(p)
+		//err = gjson.Unmarshal(p, &msg)
+		//if err != nil {
+		//	return
+		//}
 		str, _ := gjson.DecodeToJson(p)
+
+		//g.Dump(msg)
 		g.Dump(str.Map()["data"])
 		if gconv.String(str.Map()["data"]) != "" {
 			content = gconv.String(str.Map()["data"])
@@ -73,6 +85,12 @@ func MessageSend(r *ghttp.Request) {
 		go broadcastMessage(channelId, gconv.Bytes(g.Map{"message": messageInfo}))
 	}
 
+	defer clean(channelId, conn)
+}
+
+func clean(channelId uint64, conn *websocket.Conn) {
+	mu.Lock()
+	defer mu.Unlock()
 	// 在连接关闭时，将其从房间中移除
 	connections := rooms[channelId]
 	for i, number := range connections {
@@ -84,6 +102,8 @@ func MessageSend(r *ghttp.Request) {
 }
 
 func broadcastMessage(channelId uint64, message []byte) {
+	mu.RLock()
+	defer mu.RUnlock()
 	// 查询房间内所有连接的客户端
 	connections := rooms[channelId]
 	for _, conn := range connections {

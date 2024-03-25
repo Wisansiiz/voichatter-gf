@@ -28,12 +28,12 @@ func GroupChat(r *ghttp.Request) {
 		r.Exit()
 	}
 	conn := ws.Conn
-	defer func(conn *websocket.Conn) {
-		err = conn.Close()
+	defer func(ws *ghttp.WebSocket) {
+		err = ws.Close()
 		if err != nil {
 			return
 		}
-	}(conn)
+	}(ws)
 
 	currentUserId := r.GetCtxVar("userId").String()
 	channelId := r.GetQuery("serverId").String() + r.GetQuery("channelId").String()
@@ -44,7 +44,9 @@ func GroupChat(r *ghttp.Request) {
 		if err := readMessage(conn, &msg); err != nil {
 			break
 		}
-		handleMessage(channelId, currentUserId, conn, &msg)
+		if ok := handleMessage(channelId, currentUserId, conn, &msg); ok {
+			break
+		}
 	}
 
 	cleanUp(channelId, currentUserId, conn)
@@ -64,7 +66,7 @@ func readMessage(conn *websocket.Conn, msg *Msg) error {
 	return gjson.Unmarshal(p, msg)
 }
 
-func handleMessage(channelId, currentUserId string, conn *websocket.Conn, msg *Msg) {
+func handleMessage(channelId, currentUserId string, conn *websocket.Conn, msg *Msg) bool {
 	switch msg.Code {
 	case "offer", "answer", "candidate":
 		targetId := msg.Data["targetId"]
@@ -75,7 +77,9 @@ func handleMessage(channelId, currentUserId string, conn *websocket.Conn, msg *M
 	case "leave_group":
 		broadcastGroupMessage(channelId, currentUserId, msg)
 		removeFromGroup(channelId, conn)
+		return true
 	}
+	return false
 }
 
 func cleanUp(channelId, userId string, conn *websocket.Conn) {
