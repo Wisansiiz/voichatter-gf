@@ -6,7 +6,7 @@ import (
 )
 
 type GroupListReq struct {
-	g.Meta   `path:"/groups/{serverId}" method:"get" tags:"GroupService" summary:""`
+	g.Meta   `path:"/groups/{serverId}" method:"get" tags:"GroupService" summary:"查询分组列表"`
 	ServerId uint64 `p:"serverId" v:"required"`
 }
 
