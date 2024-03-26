@@ -32,13 +32,6 @@ func (s *sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupL
 	serverVoGroup := fmt.Sprintf("%s-%d-%s-%d", consts.ServerId, serverId, consts.GroupList, userId)
 	serverVoChannel := fmt.Sprintf("%s-%d-%s-%d", consts.ServerId, serverId, consts.ChannelList, userId)
 
-	count, err := dao.Member.Ctx(ctx).Where("server_id = ? AND user_id = ?", serverId, userId).Count()
-	if err != nil {
-		return nil, errResponse.DbOperationError("查询失败")
-	}
-	if count == 0 {
-		return nil, errResponse.OperationFailed("权限不足")
-	}
 	// 查询群列表
 	var groupList []model.GroupList
 	getGroupList, err := g.Redis().Get(ctx, serverVoGroup)
@@ -63,6 +56,14 @@ func (s *sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupL
 	// 有数据返回
 	if res != nil {
 		return
+	}
+
+	count, err := dao.Member.Ctx(ctx).Where("server_id = ? AND user_id = ?", serverId, userId).Count()
+	if err != nil {
+		return nil, errResponse.DbOperationError("查询失败")
+	}
+	if count == 0 {
+		return nil, errResponse.OperationFailed("权限不足")
 	}
 	// 没数据从数据库中查询
 	err = dao.Group.Ctx(ctx).
