@@ -33,7 +33,7 @@ func (s *sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupL
 	serverVoChannel := fmt.Sprintf("%s-%d-%s-%d", consts.ServerId, serverId, consts.ChannelList, userId)
 
 	// 查询群列表
-	var groupList []model.GroupList
+	var groupList []*model.GroupList
 	getGroupList, err := g.Redis().Get(ctx, serverVoGroup)
 	if err != nil {
 		return nil, errResponse.DbOperationError("查询失败")
@@ -42,15 +42,15 @@ func (s *sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupL
 		return nil, errResponse.OperationFailed("失败")
 	}
 	// 查询频道列表
-	var channelList []model.ChannelInfo
+	var channelList []*model.ChannelInfo
 	getChannelList, err := g.Redis().Get(ctx, serverVoChannel)
 	if err = gconv.Struct(getChannelList, &channelList); err != nil {
 		return nil, errResponse.OperationFailed("失败")
 	}
 	if groupList != nil || channelList != nil {
 		res = &v1.GroupListRes{
-			ChannelList: &channelList,
-			GroupList:   &groupList,
+			ChannelList: channelList,
+			GroupList:   groupList,
 		}
 	}
 	// 有数据返回
@@ -94,8 +94,8 @@ func (s *sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupL
 		return nil, errResponse.DbOperationError("设置失败")
 	}
 	return &v1.GroupListRes{
-		ChannelList: &channelList,
-		GroupList:   &groupList,
+		ChannelList: channelList,
+		GroupList:   groupList,
 	}, nil
 }
 

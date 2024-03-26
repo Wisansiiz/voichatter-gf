@@ -11,6 +11,6 @@ type GroupListReq struct {
 }
 
 type GroupListRes struct {
-	ChannelList *[]model.ChannelInfo `json:"channelList"`
-	GroupList   *[]model.GroupList   `json:"groupList"`
+	ChannelList []*model.ChannelInfo `json:"channelList"`
+	GroupList   []*model.GroupList   `json:"groupList"`
 }
