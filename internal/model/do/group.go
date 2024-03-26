@@ -15,6 +15,5 @@ type Group struct {
 	GroupId   interface{} //
 	ServerId  interface{} // 服务器id
 	GroupName interface{} // 分组名称
-	ChannelId interface{} // 频道id
 	DeletedAt *gtime.Time // 删除日期
 }

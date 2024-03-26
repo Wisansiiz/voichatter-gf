@@ -23,7 +23,6 @@ type GroupColumns struct {
 	GroupId   string //
 	ServerId  string // 服务器id
 	GroupName string // 分组名称
-	ChannelId string // 频道id
 	DeletedAt string // 删除日期
 }
 
@@ -32,7 +31,6 @@ var groupColumns = GroupColumns{
 	GroupId:   "group_id",
 	ServerId:  "server_id",
 	GroupName: "group_name",
-	ChannelId: "channel_id",
 	DeletedAt: "deleted_at",
 }
 

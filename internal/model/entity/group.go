@@ -13,6 +13,5 @@ type Group struct {
 	GroupId   uint64      `json:"group_id"   ` //
 	ServerId  uint64      `json:"server_id"  ` // 服务器id
 	GroupName string      `json:"group_name" ` // 分组名称
-	ChannelId uint64      `json:"channel_id" ` // 频道id
 	DeletedAt *gtime.Time `json:"deleted_at" ` // 删除日期
 }

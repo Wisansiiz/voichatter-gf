@@ -15,9 +15,9 @@ type Channel struct {
 	ChannelId    interface{} // 频道id
 	ChannelName  interface{} // 频道名称
 	ServerId     interface{} // 服务器id
+	GroupId      interface{} // 分组表
 	Type         interface{} // 服务器类型
 	CreationDate *gtime.Time // 服务器创建时间
 	CreateUserId interface{} // 服务器创建者id
 	DeletedAt    *gtime.Time // 删除时间
-	GroupId      interface{} // 分组表
 }
