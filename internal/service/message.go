@@ -14,7 +14,7 @@ import (
 type (
 	IMessage interface {
 		MessageList(ctx context.Context, in model.Message) (res *v1.MessageListRes, err error)
-		MessagePages(ctx context.Context, in model.MessagePagesRes) (res *v1.MessagePagesRes, err error)
+		MessagePages(ctx context.Context, in model.MessagePagesReq) (res *v1.MessagePagesRes, err error)
 	}
 )
 

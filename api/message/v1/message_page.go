@@ -14,5 +14,5 @@ type MessagePagesReq struct {
 }
 
 type MessagePagesRes struct {
-	MessagePages *model.MessagePagesRep `json:"messagePages"`
+	MessagePages *model.MessagePagesRes `json:"messagePages"`
 }

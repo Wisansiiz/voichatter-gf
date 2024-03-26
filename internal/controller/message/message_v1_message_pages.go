@@ -9,7 +9,7 @@ import (
 )
 
 func (c *ControllerV1) MessagePages(ctx context.Context, req *v1.MessagePagesReq) (res *v1.MessagePagesRes, err error) {
-	pages, err := service.Message().MessagePages(ctx, model.MessagePagesRes{
+	pages, err := service.Message().MessagePages(ctx, model.MessagePagesReq{
 		ServerId:  req.ServerId,
 		ChannelId: req.ChannelId,
 		Page:      req.Page,

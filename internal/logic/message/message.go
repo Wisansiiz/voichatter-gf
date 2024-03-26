@@ -44,7 +44,7 @@ func (s *sMessage) MessageList(ctx context.Context, in model.Message) (res *v1.M
 	}, nil
 }
 
-func (s *sMessage) MessagePages(ctx context.Context, in model.MessagePagesRes) (res *v1.MessagePagesRes, err error) {
+func (s *sMessage) MessagePages(ctx context.Context, in model.MessagePagesReq) (res *v1.MessagePagesRes, err error) {
 	userId := gconv.Uint64(ctx.Value("userId"))
 	count, err := dao.Member.Ctx(ctx).
 		Where("server_id = ? AND user_id = ?", in.ServerId, userId).
@@ -69,7 +69,7 @@ func (s *sMessage) MessagePages(ctx context.Context, in model.MessagePagesRes) (
 		return nil, errResponse.DbOperationError("获取消息列表失败")
 	}
 	return &v1.MessagePagesRes{
-		MessagePages: &model.MessagePagesRep{
+		MessagePages: &model.MessagePagesRes{
 			MessageInfo: messages,
 			PageTotal:   count,
 		},
