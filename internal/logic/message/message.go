@@ -30,7 +30,7 @@ func (s *sMessage) MessageList(ctx context.Context, in model.Message) (res *v1.M
 	if err != nil || count == 0 {
 		return nil, errResponse.NotAuthorized("Forbidden")
 	}
-	var messages []model.MessageInfo
+	var messages []*model.MessageInfo
 	err = dao.Message.Ctx(ctx).
 		InnerJoin("user", "message.sender_user_id = user.user_id").
 		Fields("message.attachment,message.send_date,message.sender_user_id,message.content,message.server_id,message.message_id,user.avatar_url,user.username").
@@ -40,7 +40,7 @@ func (s *sMessage) MessageList(ctx context.Context, in model.Message) (res *v1.M
 		return nil, errResponse.DbOperationError("获取消息列表失败")
 	}
 	return &v1.MessageListRes{
-		MessageList: &messages,
+		MessageList: messages,
 	}, nil
 }
 
