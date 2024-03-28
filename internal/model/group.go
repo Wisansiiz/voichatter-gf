@@ -17,3 +17,8 @@ type GroupCreateInput struct {
 	ServerId  uint64 `json:"serverId"  ` // 服务器id
 	GroupName string `json:"groupName" ` // 分组名称
 }
+
+type GroupRemoveInput struct {
+	ServerId uint64 `json:"serverId"  ` // 服务器id
+	GroupId  uint64 `json:"groupId"   ` // 分组id
+}

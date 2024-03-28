@@ -9,6 +9,7 @@ import (
 	v1 "voichatter/api/group/v1"
 	"voichatter/internal/consts"
 	"voichatter/internal/dao"
+	"voichatter/internal/logic/cache"
 	"voichatter/internal/model"
 	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
@@ -38,13 +39,13 @@ func (s *sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupL
 	if err != nil {
 		return nil, errResponse.DbOperationError("查询失败")
 	}
-	if err = gconv.Struct(getGroupList, &groupList); err != nil {
+	if err = getGroupList.Struct(&groupList); err != nil {
 		return nil, errResponse.OperationFailed("失败")
 	}
 	// 查询频道列表
 	var channelList []*model.ChannelInfo
 	getChannelList, err := g.Redis().Get(ctx, serverVoChannel)
-	if err = gconv.Struct(getChannelList, &channelList); err != nil {
+	if err = getChannelList.Struct(&channelList); err != nil {
 		return nil, errResponse.OperationFailed("失败")
 	}
 	if groupList != nil || channelList != nil {
@@ -120,6 +121,9 @@ func (s *sGroup) GroupCreate(ctx context.Context, in model.GroupCreateInput) (re
 		ServerId:  in.ServerId,
 		GroupName: in.GroupName,
 	}
+	if err = cache.DelGroupVoCache(ctx, in.ServerId); err != nil {
+		return nil, err
+	}
 	return &v1.GroupCreateRes{
 		Group: &groupInfo,
 	}, nil
@@ -130,7 +134,22 @@ func (s *sGroup) GroupModify(ctx context.Context, req *v1.GroupModifyReq) (res *
 	panic("implement me")
 }
 
-func (s *sGroup) GroupRemove(ctx context.Context, req *v1.GroupRemoveReq) (res *v1.GroupRemoveRes, err error) {
-
-	panic("implement me")
+func (s *sGroup) GroupRemove(ctx context.Context, in model.GroupRemoveInput) (res *v1.GroupRemoveRes, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	count, err := dao.Server.Ctx(ctx).Where("server_id = ? AND creator_user_id = ?", in.ServerId, userId).Count()
+	if err != nil || count == 0 {
+		return nil, errResponse.OperationFailed("权限不足")
+	}
+	_, err = dao.Group.Ctx(ctx).Where("group_id = ?", in.GroupId).Delete()
+	if err != nil {
+		return nil, errResponse.DbOperationError("删除失败")
+	}
+	_, err = dao.Channel.Ctx(ctx).Where("group_id = ?", in.GroupId).Delete()
+	if err != nil {
+		return nil, errResponse.DbOperationError("删除分组下频道失败")
+	}
+	if err = cache.DelGroupVoCache(ctx, in.ServerId); err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
