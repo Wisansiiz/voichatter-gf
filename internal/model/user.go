@@ -34,3 +34,9 @@ type LoginRes struct {
 	LastLoginDate *gtime.Time
 	AvatarUrl     string
 }
+
+type ModifyUserRoleInput struct {
+	UserId       uint64 `json:"userId"`
+	SPermissions string `json:"SPermissions"`
+	ServerId     uint64 `json:"serverId"`
+}

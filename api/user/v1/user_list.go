@@ -11,5 +11,5 @@ type UserListReq struct {
 }
 
 type UserListRes struct {
-	Users *[]model.UserList4Server `json:"users"`
+	Users []*model.UserList4Server `json:"users"`
 }

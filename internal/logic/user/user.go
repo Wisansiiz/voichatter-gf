@@ -12,6 +12,7 @@ import (
 	v1 "voichatter/api/user/v1"
 	"voichatter/internal/consts"
 	"voichatter/internal/dao"
+	"voichatter/internal/logic/cache"
 	"voichatter/internal/model"
 	"voichatter/internal/model/do"
 	"voichatter/internal/model/entity"
@@ -52,13 +53,13 @@ func (s *sUser) UserList(ctx context.Context, serverId uint64) (res *v1.UserList
 	if err != nil {
 		return nil, errResponse.DbOperationError("获取用户信息列表失败")
 	}
-	var users []model.UserList4Server
-	if err = gconv.Struct(usersValue, &users); err != nil {
+	var users []*model.UserList4Server
+	if err = usersValue.Struct(&users); err != nil {
 		return nil, errResponse.OperationFailed("获取用户信息列表失败")
 	}
 	if users != nil {
 		return &v1.UserListRes{
-			Users: &users,
+			Users: users,
 		}, nil
 	}
 
@@ -76,6 +77,7 @@ func (s *sUser) UserList(ctx context.Context, serverId uint64) (res *v1.UserList
 		Fields("user.user_id", "user.username", "user.email", "user.avatar_url", "member.s_permissions", "user.last_login_date").
 		LeftJoin("member", "user.user_id = member.user_id").
 		Where("user.user_id IN(?) AND member.server_id = ?", userIds, serverId).
+		OrderAsc("member.join_date").
 		Scan(&users)
 	if err != nil {
 		return nil, errResponse.DbOperationError("获取用户信息列表失败")
@@ -86,7 +88,7 @@ func (s *sUser) UserList(ctx context.Context, serverId uint64) (res *v1.UserList
 	}
 
 	return &v1.UserListRes{
-		Users: &users,
+		Users: users,
 	}, nil
 }
 
@@ -125,5 +127,36 @@ func (s *sUser) UserId(ctx context.Context, _ *v1.UserIdReq) (res *v1.UserIdRes,
 	userId := gconv.Uint64(ctx.Value("userId"))
 	return &v1.UserIdRes{
 		UserId: userId,
+	}, nil
+}
+
+func (s *sUser) UserRole(ctx context.Context, in model.ModifyUserRoleInput) (res *v1.UserRoleRes, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	count, err := dao.Server.Ctx(ctx).Where("server_id = ? AND creator_user_id = ?", in.ServerId, userId).Count()
+	if err != nil || count == 0 {
+		return nil, errResponse.DbOperationError("权限不足")
+	}
+	if in.UserId == userId {
+		return nil, errResponse.OperationFailed("不能修改自己的权限")
+	}
+	count, err = dao.Permission.Ctx(ctx).
+		Where("permission_type = ?", in.SPermissions).
+		Count()
+	if err != nil || count == 0 {
+		return nil, errResponse.DbOperationError("权限参数错误")
+	}
+	_, err = dao.Member.Ctx(ctx).
+		Fields("s_permissions").
+		Data("s_permissions", in.SPermissions).
+		Where("server_id = ? AND user_id = ?", in.ServerId, in.UserId).
+		Update()
+	if err != nil {
+		return nil, errResponse.DbOperationError("更新失败")
+	}
+	if err = cache.DelServerUsersCache(ctx, in.ServerId); err != nil {
+		return nil, errResponse.OperationFailed("清理缓存失败")
+	}
+	return &v1.UserRoleRes{
+		UserInput: in,
 	}, nil
 }
