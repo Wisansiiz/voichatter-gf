@@ -10,5 +10,5 @@ type ServerListReq struct {
 }
 
 type ServerListRes struct {
-	ServerList *[]model.Server `json:"serverList"`
+	ServerList []*model.Server `json:"serverList"`
 }

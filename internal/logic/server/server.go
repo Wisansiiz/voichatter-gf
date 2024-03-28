@@ -32,18 +32,17 @@ func (s *sServer) ServerList(ctx context.Context, _ *v1.ServerListReq) (res *v1.
 
 	serverList := fmt.Sprintf("%s-%d", consts.ServerList, userId)
 
-	var servers []model.Server
+	var servers []*model.Server
 	get, err := g.Redis().Get(ctx, serverList)
 	if err != nil {
 		return nil, errResponse.DbOperationError("查询服务器列表出错了")
 	}
-	err = gconv.Struct(get, &servers)
-	if err != nil {
+	if err = get.Struct(&servers); err != nil {
 		return nil, errResponse.OperationFailed("服务器列表转换出错")
 	}
 	if servers != nil {
 		return &v1.ServerListRes{
-			ServerList: &servers,
+			ServerList: servers,
 		}, nil
 	}
 	err = g.Model("server s").
@@ -59,7 +58,7 @@ func (s *sServer) ServerList(ctx context.Context, _ *v1.ServerListReq) (res *v1.
 		return nil, errResponse.DbOperationError("设置服务器列表缓存出错了")
 	}
 	return &v1.ServerListRes{
-		ServerList: &servers,
+		ServerList: servers,
 	}, nil
 }
 
