@@ -15,5 +15,6 @@ type Notification struct {
 	Content        string      `json:"content"         ` // 内容
 	ServerId       uint64      `json:"server_id"       ` // 属于哪个服务器
 	CreateUserId   uint64      `json:"create_user_id"  ` // 创建者id
+	LastEditDate   *gtime.Time `json:"last_edit_date"  ` // 最后编辑时间
 	DeletedAt      *gtime.Time `json:"deleted_at"      ` // 删除时间
 }

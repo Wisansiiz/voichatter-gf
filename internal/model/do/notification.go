@@ -17,5 +17,6 @@ type Notification struct {
 	Content        interface{} // 内容
 	ServerId       interface{} // 属于哪个服务器
 	CreateUserId   interface{} // 创建者id
+	LastEditDate   *gtime.Time // 最后编辑时间
 	DeletedAt      *gtime.Time // 删除时间
 }

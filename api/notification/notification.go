@@ -12,4 +12,5 @@ import (
 
 type INotificationV1 interface {
 	NotificationCreate(ctx context.Context, req *v1.NotificationCreateReq) (res *v1.NotificationCreateRes, err error)
+	NotificationGet(ctx context.Context, req *v1.NotificationGetReq) (res *v1.NotificationGetRes, err error)
 }

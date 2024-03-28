@@ -25,6 +25,7 @@ type NotificationColumns struct {
 	Content        string // 内容
 	ServerId       string // 属于哪个服务器
 	CreateUserId   string // 创建者id
+	LastEditDate   string // 最后编辑时间
 	DeletedAt      string // 删除时间
 }
 
@@ -35,6 +36,7 @@ var notificationColumns = NotificationColumns{
 	Content:        "content",
 	ServerId:       "server_id",
 	CreateUserId:   "create_user_id",
+	LastEditDate:   "last_edit_date",
 	DeletedAt:      "deleted_at",
 }
 
