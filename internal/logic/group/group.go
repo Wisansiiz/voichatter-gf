@@ -12,6 +12,7 @@ import (
 	"voichatter/internal/model"
 	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
+	"voichatter/utility/auth"
 	"voichatter/utility/cache"
 	"voichatter/utility/errResponse"
 )
@@ -101,13 +102,8 @@ func (s *sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupL
 }
 
 func (s *sGroup) GroupCreate(ctx context.Context, in model.GroupCreateInput) (res *v1.GroupCreateRes, err error) {
-	userId := gconv.Uint64(ctx.Value("userId"))
-	count, err := dao.Server.Ctx(ctx).Where("server_id = ? AND creator_user_id = ?", in.ServerId, userId).Count()
-	if err != nil {
-		return nil, errResponse.DbOperationError("查询失败")
-	}
-	if count == 0 {
-		return nil, errResponse.OperationFailed("权限不足")
+	if err = auth.IsServerCreator(ctx, in.ServerId); err != nil {
+		return nil, err
 	}
 	id, err := dao.Group.Ctx(ctx).InsertAndGetId(entity.Group{
 		ServerId:  in.ServerId,
@@ -129,16 +125,34 @@ func (s *sGroup) GroupCreate(ctx context.Context, in model.GroupCreateInput) (re
 	}, nil
 }
 
-func (s *sGroup) GroupModify(ctx context.Context, req *v1.GroupModifyReq) (res *v1.GroupModifyRes, err error) {
-
-	panic("implement me")
+func (s *sGroup) GroupModify(ctx context.Context, in model.Group) (res *v1.GroupModifyRes, err error) {
+	if err = auth.IsServerCreator(ctx, in.ServerId); err != nil {
+		return nil, err
+	}
+	update, err := dao.Group.Ctx(ctx).
+		Fields("group_name").
+		Data(entity.Group{GroupName: in.GroupName}).
+		Where("server_id = ? AND group_id = ?", in.ServerId, in.GroupId).
+		Update()
+	if err != nil || update == nil {
+		return nil, errResponse.OperationFailed("无该分组")
+	}
+	// 删除缓存
+	if err = cache.DelGroupVoCache(ctx, in.ServerId); err != nil {
+		return nil, err
+	}
+	var group *model.Group
+	if err = dao.Group.Ctx(ctx).Where("group_id = ?", in.GroupId).Scan(&group); err != nil {
+		return nil, errResponse.DbOperationError("查询失败")
+	}
+	return &v1.GroupModifyRes{
+		Group: group,
+	}, nil
 }
 
 func (s *sGroup) GroupRemove(ctx context.Context, in model.GroupRemoveInput) (res *v1.GroupRemoveRes, err error) {
-	userId := gconv.Uint64(ctx.Value("userId"))
-	count, err := dao.Server.Ctx(ctx).Where("server_id = ? AND creator_user_id = ?", in.ServerId, userId).Count()
-	if err != nil || count == 0 {
-		return nil, errResponse.OperationFailed("权限不足")
+	if err = auth.IsServerCreator(ctx, in.ServerId); err != nil {
+		return nil, err
 	}
 	_, err = dao.Group.Ctx(ctx).Where("group_id = ?", in.GroupId).Delete()
 	if err != nil {
