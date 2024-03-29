@@ -6,10 +6,10 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	v1 "voichatter/api/channel/v1"
 	"voichatter/internal/dao"
-	"voichatter/internal/logic/cache"
 	"voichatter/internal/model"
 	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
+	"voichatter/utility/cache"
 	"voichatter/utility/errResponse"
 )
 

@@ -12,11 +12,11 @@ import (
 	v1 "voichatter/api/user/v1"
 	"voichatter/internal/consts"
 	"voichatter/internal/dao"
-	"voichatter/internal/logic/cache"
 	"voichatter/internal/model"
 	"voichatter/internal/model/do"
 	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
+	"voichatter/utility/cache"
 	"voichatter/utility/errResponse"
 )
 
