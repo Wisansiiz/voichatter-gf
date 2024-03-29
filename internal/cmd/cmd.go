@@ -13,6 +13,7 @@ import (
 	"voichatter/internal/controller/chat"
 	sgroup "voichatter/internal/controller/group"
 	"voichatter/internal/controller/message"
+	"voichatter/internal/controller/notification"
 	"voichatter/internal/controller/server"
 	"voichatter/internal/controller/user"
 	"voichatter/internal/model"
@@ -88,6 +89,7 @@ var (
 						server.NewV1(),
 						message.NewV1(),
 						channel.NewV1(),
+						notification.NewV1(),
 					)
 				})
 			})
