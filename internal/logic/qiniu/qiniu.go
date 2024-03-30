@@ -8,7 +8,6 @@ import (
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/qiniu/go-sdk/v7/auth"
 	"github.com/qiniu/go-sdk/v7/storage"
-	v1 "voichatter/api/qiniu/v1"
 	"voichatter/internal/service"
 )
 
@@ -24,11 +23,7 @@ func New() service.IQiniu {
 	return &sQiniu{}
 }
 
-func (s *sQiniu) UploadFile(ctx context.Context, file *ghttp.UploadFile) (req *v1.UploadFileRes, err error) {
-	if file == nil {
-		return nil, gerror.New("无文件")
-	}
-
+func (s *sQiniu) UploadFile(ctx context.Context, file *ghttp.UploadFile, prefix string) (url string, err error) {
 	dirPath := "./upload/"
 	key, err := file.Save(dirPath, true)
 	if err != nil {
@@ -53,16 +48,14 @@ func (s *sQiniu) UploadFile(ctx context.Context, file *ghttp.UploadFile) (req *v
 	putExtra := storage.PutExtra{
 		Params: map[string]string{},
 	}
-	err = formUploader.PutFile(ctx, &ret, upToken, key, localFile, &putExtra)
+	err = formUploader.PutFile(ctx, &ret, upToken, prefix+"/"+key, localFile, &putExtra)
 	if err != nil {
 		return
 	}
-	url := g.Cfg().MustGet(ctx, "qiniu.url").String() + ret.Key
+	url = g.Cfg().MustGet(ctx, "qiniu.url").String() + ret.Key + g.Cfg().MustGet(ctx, "qiniu.tails").String()
 	g.Dump(url)
 	if err = gfile.Remove(localFile); err != nil {
-		return nil, gerror.New("删除文件失败")
+		return "", gerror.New("删除文件失败")
 	}
-	return &v1.UploadFileRes{
-		Url: url,
-	}, nil
+	return url, nil
 }

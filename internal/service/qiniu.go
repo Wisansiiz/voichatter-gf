@@ -7,14 +7,13 @@ package service
 
 import (
 	"context"
-	v1 "voichatter/api/qiniu/v1"
 
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 type (
 	IQiniu interface {
-		UploadFile(ctx context.Context, file *ghttp.UploadFile) (req *v1.UploadFileRes, err error)
+		UploadFile(ctx context.Context, file *ghttp.UploadFile, prefix string) (url string, err error)
 	}
 )
 
