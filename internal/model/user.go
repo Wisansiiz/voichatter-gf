@@ -40,3 +40,10 @@ type ModifyUserRoleInput struct {
 	SPermissions string `json:"SPermissions"`
 	ServerId     uint64 `json:"serverId"`
 }
+
+type UserInfo struct {
+	UserId    uint64 `json:"userId"           ` // 用户id
+	Username  string `json:"username"         ` // 用户名
+	Email     string `json:"email"            ` // 邮箱
+	AvatarUrl string `json:"avatarUrl"        ` // 头像链接
+}

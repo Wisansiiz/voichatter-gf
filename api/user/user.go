@@ -15,4 +15,5 @@ type IUserV1 interface {
 	UserId(ctx context.Context, req *v1.UserIdReq) (res *v1.UserIdRes, err error)
 	UserList(ctx context.Context, req *v1.UserListReq) (res *v1.UserListRes, err error)
 	SignUp(ctx context.Context, req *v1.SignUpReq) (res *v1.SignUpRes, err error)
+	UserAvatar(ctx context.Context, req *v1.UserAvatarReq) (res *v1.UserAvatarRes, err error)
 }

@@ -160,3 +160,29 @@ func (s *sUser) UserRole(ctx context.Context, in model.ModifyUserRoleInput) (res
 		UserInput: in,
 	}, nil
 }
+
+func (s *sUser) UserAvatar(ctx context.Context, file *ghttp.UploadFile) (res *v1.UserAvatarRes, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	url, err := service.Qiniu().UploadFile(ctx, file, "avatar")
+	if err != nil {
+		return nil, errResponse.CodeInvalidParameter("上传失败")
+	}
+	update, err := dao.User.Ctx(ctx).
+		Fields("avatar_url").
+		Data("avatar_url", url).
+		Where("user_id = ?", userId).
+		Update()
+	if err != nil || update == nil {
+		return nil, errResponse.DbOperationError("操作失败")
+	}
+	var userInfo *model.UserInfo
+	if err = dao.User.Ctx(ctx).Where("user_id = ?", userId).Scan(&userInfo); err != nil {
+		return nil, errResponse.DbOperationError("操作失败")
+	}
+	if err = cache.DelJoinServerUsersCache(ctx, userId); err != nil {
+		return nil, errResponse.OperationFailed("清理缓存失败")
+	}
+	return &v1.UserAvatarRes{
+		UserInfo: *userInfo,
+	}, nil
+}

@@ -20,6 +20,7 @@ type (
 		LoginFunc(r *ghttp.Request) (string, interface{})
 		UserId(ctx context.Context, _ *v1.UserIdReq) (res *v1.UserIdRes, err error)
 		UserRole(ctx context.Context, in model.ModifyUserRoleInput) (res *v1.UserRoleRes, err error)
+		UserAvatar(ctx context.Context, file *ghttp.UploadFile) (res *v1.UserAvatarRes, err error)
 	}
 )
 
