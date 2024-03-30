@@ -70,3 +70,22 @@ func DelServerListCache(ctx context.Context, userId uint64) error {
 	}
 	return err
 }
+
+// DelJoinServerUsersCache 删除用户加入的所有服务器成员列表缓存
+func DelJoinServerUsersCache(ctx context.Context, userId uint64) error {
+	serverIds, err := dao.Member.Ctx(ctx).
+		Fields("server_id").
+		Where("user_id = ?", userId).
+		Array()
+	if err != nil {
+		return errResponse.DbOperationError("获取服务器列表失败")
+	}
+	for _, serverId := range serverIds {
+		_, err = g.Redis().Del(ctx,
+			fmt.Sprintf("%s-%d", consts.ServerUsers, gconv.Uint64(serverId)))
+		if err != nil {
+			return errResponse.DbOperationError("删除ServerUsers缓存失败")
+		}
+	}
+	return err
+}
