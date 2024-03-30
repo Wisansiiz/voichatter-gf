@@ -55,3 +55,13 @@ func Unknown(s string) error {
 		gcode.CodeUnknown.Message(),
 	)
 }
+
+func CodeInvalidParameter(s string) error {
+	return gerror.WrapCode(gcode.New(
+		gcode.CodeInvalidParameter.Code(),
+		"",
+		nil),
+		errors.New(s),
+		gcode.CodeInvalidParameter.Message(),
+	)
+}
