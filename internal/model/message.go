@@ -21,6 +21,7 @@ type MessagePagesRes struct {
 
 type MessageInfo struct {
 	MessageId    uint64      `json:"messageId"`
+	MessageType  string      `json:"messageType"`
 	SenderUserId uint64      `json:"senderUserId"`
 	ChannelId    uint64      `json:"channelId"`
 	Content      string      `json:"content"`

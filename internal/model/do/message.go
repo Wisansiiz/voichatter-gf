@@ -13,6 +13,7 @@ import (
 type Message struct {
 	g.Meta       `orm:"table:message, do:true"`
 	MessageId    interface{} // 消息id
+	MessageType  interface{} // 消息类型
 	ServerId     interface{} // 服务器id
 	ChannelId    interface{} // 频道id
 	SenderUserId interface{} // 发送者id

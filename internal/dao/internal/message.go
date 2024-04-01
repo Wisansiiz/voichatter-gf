@@ -21,6 +21,7 @@ type MessageDao struct {
 // MessageColumns defines and stores column names for table message.
 type MessageColumns struct {
 	MessageId    string // 消息id
+	MessageType  string // 消息类型
 	ServerId     string // 服务器id
 	ChannelId    string // 频道id
 	SenderUserId string // 发送者id
@@ -33,6 +34,7 @@ type MessageColumns struct {
 // messageColumns holds the columns for table message.
 var messageColumns = MessageColumns{
 	MessageId:    "message_id",
+	MessageType:  "message_type",
 	ServerId:     "server_id",
 	ChannelId:    "channel_id",
 	SenderUserId: "sender_user_id",

@@ -8,7 +8,9 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gorilla/websocket"
+	"voichatter/internal/dao"
 	"voichatter/internal/model"
+	"voichatter/internal/model/entity"
 )
 
 var (
@@ -38,7 +40,6 @@ func MessageSend(r *ghttp.Request) {
 		if err != nil {
 			break
 		}
-		//content := string(p)
 		str, _ := gjson.DecodeToJson(p)
 		targetId = str.Get("targetId").Uint64()
 		for i, m := range rooms[targetId] {
@@ -62,31 +63,31 @@ func MessageSend(r *ghttp.Request) {
 			currentUser[userId] = conn
 			rooms[targetId] = append(rooms[targetId], currentUser)
 		}
-		//if str.Get("data").String() != "" {
-		//	content = str.Get("data").String()
-		//}
-		//if gconv.String(str.Map()["code"]) == "leave" {
-		//	clean(targetId, userId)
-		//}
-		// 持久化消息到数据库
-		//_, err = dao.Message.Ctx(r.Context()).Insert(
-		//	&entity.Message{
-		//		SenderUserId: userId,
-		//		Content:      content,
-		//		ChannelId:    channelId,
-		//		ServerId:     serverId,
-		//		SendDate:     gtime.Now(),
-		//	},
-		//)
-		//if err != nil {
-		//	r.SetError(gerror.New("持久化出错"))
-		//	return
-		//}
+		code := str.Get("code").String()
+		var id int64
+		if code != "ping" {
+			// 持久化消息到数据库
+			id, err = dao.Message.Ctx(r.Context()).InsertAndGetId(
+				&entity.Message{
+					MessageType:  code,
+					SenderUserId: userId,
+					Content:      str.Get("data").String(),
+					ChannelId:    targetId,
+					ServerId:     str.Get("serverId").Uint64(),
+					SendDate:     gtime.Now(),
+				},
+			)
+			if err != nil {
+				r.SetError(gerror.New("持久化出错"))
+				return
+			}
+		}
 		var messageInfo = model.MessageInfo{
-			MessageId: 0,
-			ChannelId: targetId,
-			Content:   str.Get("data").String(),
-			//ServerId:     serverId,
+			MessageId:    uint64(id),
+			MessageType:  code,
+			ChannelId:    targetId,
+			Content:      str.Get("data").String(),
+			ServerId:     str.Get("serverId").Uint64(),
 			Attachment:   "",
 			AvatarUrl:    r.GetCtxVar("avatarUrl").String(),
 			SenderUserId: userId,
@@ -94,8 +95,13 @@ func MessageSend(r *ghttp.Request) {
 			SendDate:     gtime.Now(),
 		}
 		// 将消息广播给房间内的所有客户端
-		g.Dump(str.Get("code").String())
-		go broadcastMessage(targetId, gconv.Bytes(g.Map{"count": len(rooms[targetId]), "code": str.Get("code").String(), "message": messageInfo}))
+		go broadcastMessage(targetId, gconv.Bytes(
+			g.Map{
+				"count":   len(rooms[targetId]),
+				"code":    code,
+				"message": messageInfo,
+			},
+		))
 	}
 	defer clean(targetId, userId)
 }

@@ -61,7 +61,7 @@ func (s *sMessage) MessagePages(ctx context.Context, in model.MessagePagesReq) (
 	var messages []*model.MessageInfo
 	if err = dao.Message.Ctx(ctx).
 		InnerJoin("user", "message.sender_user_id = user.user_id").
-		Fields("message.attachment,message.send_date,message.sender_user_id,message.content,message.server_id,message.message_id,user.avatar_url,user.username").
+		Fields("message.message_type,message.attachment,message.send_date,message.sender_user_id,message.content,message.server_id,message.message_id,user.avatar_url,user.username").
 		Where("channel_id = ?", in.ChannelId).
 		Page((count+in.PageSize-1)/in.PageSize-in.Page+1, in.PageSize). // 为了消息的可读性，这里直接从最后一页开始取
 		//Page(in.Page, in.PageSize). 										  // 如果按照传统的分页模式应该这样
