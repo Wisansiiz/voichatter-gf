@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -64,26 +65,34 @@ func (s *sServer) ServerList(ctx context.Context, _ *v1.ServerListReq) (res *v1.
 
 func (s *sServer) ServerCreate(ctx context.Context, in model.ServerCreateInput) (res *v1.ServerCreateRes, err error) {
 	userId := gconv.Uint64(ctx.Value("userId"))
+	createDate := gtime.Now()
 	server := entity.Server{
 		ServerName:    in.ServerName,
 		CreatorUserId: userId,
-		CreateDate:    gtime.Now(),
+		CreateDate:    createDate,
 		ServerType:    in.ServerType,
 		ServerImgUrl:  in.ServerImgUrl,
 	}
-	lastInsertId, err := dao.Server.Ctx(ctx).InsertAndGetId(&server)
+	var lastInsertId int64
+	err = dao.Server.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		lastInsertId, err = dao.Server.Ctx(ctx).InsertAndGetId(&server)
+		if err != nil {
+			return err
+		}
+		member := entity.Member{
+			UserId:       server.CreatorUserId,
+			ServerId:     uint64(lastInsertId),
+			JoinDate:     gtime.Now(),
+			SPermissions: "owner",
+		}
+		_, err = dao.Member.Ctx(ctx).Insert(&member)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
-		return nil, errResponse.DbOperationError("查询出错")
-	}
-	member := entity.Member{
-		UserId:       server.CreatorUserId,
-		ServerId:     uint64(lastInsertId),
-		JoinDate:     gtime.Now(),
-		SPermissions: "owner",
-	}
-	_, err = dao.Member.Ctx(ctx).Insert(&member)
-	if err != nil {
-		return nil, errResponse.DbOperationError("查询出错")
+		return nil, errResponse.DbOperationError("创建服务器出错了")
 	}
 
 	if err = cache.DelServerListsCache(ctx, uint64(lastInsertId)); err != nil {
@@ -92,10 +101,12 @@ func (s *sServer) ServerCreate(ctx context.Context, in model.ServerCreateInput) 
 
 	return &v1.ServerCreateRes{
 		Server: &model.Server{
-			ServerId:     uint64(lastInsertId),
-			ServerName:   in.ServerName,
-			ServerType:   in.ServerType,
-			ServerImgUrl: in.ServerImgUrl,
+			ServerId:      uint64(lastInsertId),
+			ServerName:    in.ServerName,
+			CreatorUserId: userId,
+			CreateDate:    createDate,
+			ServerType:    in.ServerType,
+			ServerImgUrl:  in.ServerImgUrl,
 		},
 	}, nil
 }
@@ -147,16 +158,24 @@ func (s *sServer) ServerJoin(ctx context.Context, serverId uint64) (res *v1.Serv
 
 func (s *sServer) ServerDel(ctx context.Context, serverId uint64) (res *v1.ServerDelRes, err error) {
 	userId := gconv.Uint64(ctx.Value("userId"))
-	result, err := dao.Server.Ctx(ctx).
-		Where("server_id = ? AND creator_user_id = ?", serverId, userId).
-		Delete()
-	row, _ := result.RowsAffected()
-	if err != nil || row == 0 {
-		return nil, errResponse.OperationFailed("权限不足")
-	}
-	result, err = dao.Member.Ctx(ctx).Delete("server_id = ?", serverId)
+	err = dao.Server.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		result, err := dao.Server.Ctx(ctx).
+			Where("server_id = ? AND creator_user_id = ?", serverId, userId).
+			Delete()
+		row, _ := result.RowsAffected()
+		if err != nil || row == 0 {
+			//return nil, errResponse.OperationFailed("权限不足")
+			return errResponse.OperationFailed("权限不足")
+		}
+		result, err = dao.Member.Ctx(ctx).Delete("server_id = ?", serverId)
+		if err != nil {
+			//return nil, errResponse.DbOperationError("删除成员失败")
+			return errResponse.DbOperationError("删除成员失败")
+		}
+		return nil
+	})
 	if err != nil {
-		return nil, errResponse.DbOperationError("删除成员失败")
+		return nil, err
 	}
 
 	if err = cache.DelServerListsCache(ctx, serverId); err != nil {
@@ -197,5 +216,18 @@ func (s *sServer) ServerModifyName(ctx context.Context, serverId uint64, serverN
 
 	return &v1.ServerModifyNameRes{
 		ServerInfo: server,
+	}, nil
+}
+
+func (s *sServer) ServerSearch(ctx context.Context, serverName string) (res *v1.ServerSearchRes, err error) {
+	var servers []*model.Server
+	err = dao.Server.Ctx(ctx).
+		Where("server_name LIKE ?", "%"+serverName+"%").
+		Scan(&servers)
+	if err != nil {
+		return nil, errResponse.DbOperationErrorDefault()
+	}
+	return &v1.ServerSearchRes{
+		Servers: servers,
 	}, nil
 }
