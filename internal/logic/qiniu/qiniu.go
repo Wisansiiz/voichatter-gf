@@ -6,6 +6,8 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gfile"
+	"github.com/gogf/gf/v2/text/gregex"
+	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/qiniu/go-sdk/v7/auth"
 	"github.com/qiniu/go-sdk/v7/storage"
 	"voichatter/internal/service"
@@ -52,7 +54,18 @@ func (s *sQiniu) UploadFile(ctx context.Context, file *ghttp.UploadFile, prefix 
 	if err != nil {
 		return
 	}
-	url = g.Cfg().MustGet(ctx, "qiniu.url").String() + ret.Key + g.Cfg().MustGet(ctx, "qiniu.tails").String()
+
+	result := gstr.SplitAndTrim(key, `.`)
+	if len(result) > 1 {
+		ok := gregex.IsMatchString(`^(jpg|jpeg|png|gif|webp)$`, result[1])
+		if ok {
+			url = g.Cfg().MustGet(ctx, "qiniu.url").String() + ret.Key + g.Cfg().MustGet(ctx, "qiniu.tails").String()
+		} else {
+			url = g.Cfg().MustGet(ctx, "qiniu.url").String() + ret.Key
+		}
+	} else {
+		url = g.Cfg().MustGet(ctx, "qiniu.url").String() + ret.Key + g.Cfg().MustGet(ctx, "qiniu.tails").String()
+	}
 	g.Dump(url)
 	if err = gfile.Remove(localFile); err != nil {
 		return "", gerror.New("删除文件失败")
