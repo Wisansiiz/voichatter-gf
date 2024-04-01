@@ -18,6 +18,7 @@ type (
 		ServerJoin(ctx context.Context, serverId uint64) (res *v1.ServerJoinRes, err error)
 		ServerDel(ctx context.Context, serverId uint64) (res *v1.ServerDelRes, err error)
 		ServerModifyName(ctx context.Context, serverId uint64, serverName string) (res *v1.ServerModifyNameRes, err error)
+		ServerSearch(ctx context.Context, serverName string) (res *v1.ServerSearchRes, err error)
 	}
 )
 
