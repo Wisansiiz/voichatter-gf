@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	v1 "voichatter/api/server/v1"
@@ -13,6 +14,7 @@ import (
 	"voichatter/internal/model"
 	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
+	"voichatter/utility/auth"
 	"voichatter/utility/cache"
 	"voichatter/utility/errResponse"
 )
@@ -111,12 +113,23 @@ func (s *sServer) ServerCreate(ctx context.Context, in model.ServerCreateInput) 
 	}, nil
 }
 
-func (s *sServer) ServerJoin(ctx context.Context, serverId uint64) (res *v1.ServerJoinRes, err error) {
+func (s *sServer) ServerJoin(ctx context.Context, serverId uint64, link string) (res *v1.ServerJoinRes, err error) {
 	var server *model.Server
-	// 服务器是否公开
-	err = dao.Server.Ctx(ctx).
-		Where("server_id = ? AND server_type = ?", serverId, "public").
-		Scan(&server)
+	if link == "" {
+		// 服务器是否公开
+		err = dao.Server.Ctx(ctx).
+			Where("server_id = ? AND server_type = ?", serverId, "public").
+			Scan(&server)
+	} else {
+		linkTar := fmt.Sprintf("%s-%s", consts.InviteLink, link)
+		get, err := g.Redis().Get(ctx, linkTar)
+		if err != nil {
+			return nil, errResponse.DbOperationError("查询邀请链接出错")
+		}
+		err = dao.Server.Ctx(ctx).
+			Where("server_id = ?", get.Uint64()).
+			Scan(&server)
+	}
 	if err != nil {
 		return nil, errResponse.DbOperationError("查询出错")
 	}
@@ -222,12 +235,92 @@ func (s *sServer) ServerModifyName(ctx context.Context, serverId uint64, serverN
 func (s *sServer) ServerSearch(ctx context.Context, serverName string) (res *v1.ServerSearchRes, err error) {
 	var servers []*model.Server
 	err = dao.Server.Ctx(ctx).
-		Where("server_name LIKE ?", "%"+serverName+"%").
+		Where("server_name LIKE ? AND server_type = ?", "%"+serverName+"%", "public").
 		Scan(&servers)
 	if err != nil {
 		return nil, errResponse.DbOperationErrorDefault()
 	}
 	return &v1.ServerSearchRes{
 		Servers: servers,
+	}, nil
+}
+
+func (s *sServer) ServerInfo(ctx context.Context, serverId uint64) (res *v1.ServerInfoRes, err error) {
+	if err = auth.IsServerCreator(ctx, serverId); err != nil {
+		return nil, errResponse.NotAuthorized("你不是服务器创建者不能进行服务器设置")
+	}
+	var server *model.Server
+	if err = dao.Server.Ctx(ctx).Where("server_id = ?", serverId).Scan(&server); err != nil {
+		return nil, errResponse.DbOperationErrorDefault()
+	}
+	return &v1.ServerInfoRes{
+		ServerInfo: server,
+	}, nil
+}
+
+func (s *sServer) ServerInfoUpd(ctx context.Context, in model.ServerInfoUpdInput) (res *v1.ServerInfoUpdRes, err error) {
+	if err = auth.IsServerCreator(ctx, in.ServerId); err != nil {
+		return nil, errResponse.NotAuthorized("你不是服务器创建者不能进行服务器设置")
+	}
+	_, err = dao.Server.Ctx(ctx).
+		Fields("server_description", "server_name", "server_type").
+		Data(&in).
+		Where("server_id = ?", in.ServerId).
+		Update()
+	if err != nil {
+		return nil, errResponse.DbOperationError("更新失败")
+	}
+	if err = cache.DelServerListsCache(ctx, in.ServerId); err != nil {
+		return nil, err
+	}
+	var server *model.Server
+	err = dao.Server.Ctx(ctx).Where("server_id = ?", in.ServerId).Scan(&server)
+	if err != nil {
+		return nil, errResponse.DbOperationErrorDefault()
+	}
+	return &v1.ServerInfoUpdRes{
+		ServerInfo: server,
+	}, nil
+}
+
+func (s *sServer) ServerCount(ctx context.Context, _ *v1.ServerCountReq) (res *v1.ServerCountRes, err error) {
+	count, err := dao.Server.Ctx(ctx).Count()
+	if err != nil {
+		return nil, errResponse.DbOperationErrorDefault()
+	}
+	return &v1.ServerCountRes{
+		Count: uint64(count),
+	}, nil
+}
+
+func (s *sServer) ServerImg(ctx context.Context, serverId uint64, file *ghttp.UploadFile) (res *v1.ServerImgRes, err error) {
+	if err = auth.IsServerCreator(ctx, serverId); err != nil {
+		return nil, errResponse.NotAuthorized("你不是服务器创建者不能进行服务器设置")
+	}
+	url, err := service.Qiniu().UploadFile(ctx, file, "server")
+	if err != nil {
+		return nil, errResponse.CodeInvalidParameter("上传失败")
+	}
+	update, err := dao.Server.Ctx(ctx).Fields("server_img_url").
+		Data(g.Map{
+			"server_img_url": url,
+		}).
+		Where("server_id = ?", serverId).
+		Update()
+	if err != nil || update == nil {
+		return nil, errResponse.DbOperationError("操作失败")
+	}
+	if err = cache.DelServerListsCache(ctx, serverId); err != nil {
+		return nil, err
+	}
+	var server *model.Server
+	err = dao.Server.Ctx(ctx).
+		Where("server_id = ?", serverId).
+		Scan(&server)
+	if err != nil {
+		return nil, errResponse.DbOperationErrorDefault()
+	}
+	return &v1.ServerImgRes{
+		ServerInfo: server,
 	}, nil
 }

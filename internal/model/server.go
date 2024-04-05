@@ -8,11 +8,20 @@ type ServerCreateInput struct {
 	ServerImgUrl string
 }
 
+type ServerInfoUpdInput struct {
+	ServerId          uint64 `json:"serverId"          `
+	ServerName        string `json:"serverName"        `
+	ServerType        string `json:"serverType"        `
+	ServerImgUrl      string `json:"serverImgUrl"      `
+	ServerDescription string `json:"serverDescription" `
+}
+
 type Server struct {
-	ServerId      uint64      `json:"serverId"       `
-	ServerName    string      `json:"serverName"     `
-	CreatorUserId uint64      `json:"creatorUserId" `
-	CreateDate    *gtime.Time `json:"createDate"     `
-	ServerType    string      `json:"serverType"     `
-	ServerImgUrl  string      `json:"serverImgUrl"  `
+	ServerId          uint64      `json:"serverId"          `
+	ServerName        string      `json:"serverName"        `
+	CreatorUserId     uint64      `json:"creatorUserId"     `
+	CreateDate        *gtime.Time `json:"createDate"        `
+	ServerType        string      `json:"serverType"        `
+	ServerImgUrl      string      `json:"serverImgUrl"      `
+	ServerDescription string      `json:"serverDescription" `
 }

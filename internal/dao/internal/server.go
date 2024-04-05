@@ -20,24 +20,26 @@ type ServerDao struct {
 
 // ServerColumns defines and stores column names for table server.
 type ServerColumns struct {
-	ServerId      string // 服务器id
-	ServerName    string // 服务器名称
-	CreatorUserId string // 服务器创建者id
-	CreateDate    string // 创建日期
-	ServerType    string // 服务器类型
-	ServerImgUrl  string // 服务器头像链接
-	DeletedAt     string // 删除日期
+	ServerId          string // 服务器id
+	ServerName        string // 服务器名称
+	ServerDescription string // 服务器描述
+	CreatorUserId     string // 服务器创建者id
+	CreateDate        string // 创建日期
+	ServerType        string // 服务器类型
+	ServerImgUrl      string // 服务器头像链接
+	DeletedAt         string // 删除日期
 }
 
 // serverColumns holds the columns for table server.
 var serverColumns = ServerColumns{
-	ServerId:      "server_id",
-	ServerName:    "server_name",
-	CreatorUserId: "creator_user_id",
-	CreateDate:    "create_date",
-	ServerType:    "server_type",
-	ServerImgUrl:  "server_img_url",
-	DeletedAt:     "deleted_at",
+	ServerId:          "server_id",
+	ServerName:        "server_name",
+	ServerDescription: "server_description",
+	CreatorUserId:     "creator_user_id",
+	CreateDate:        "create_date",
+	ServerType:        "server_type",
+	ServerImgUrl:      "server_img_url",
+	DeletedAt:         "deleted_at",
 }
 
 // NewServerDao creates and returns a new DAO object for table data access.
