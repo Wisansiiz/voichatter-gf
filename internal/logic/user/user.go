@@ -8,6 +8,7 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/mojocn/base64Captcha"
 	"golang.org/x/crypto/bcrypt"
 	v1 "voichatter/api/user/v1"
 	"voichatter/internal/consts"
@@ -18,6 +19,7 @@ import (
 	"voichatter/internal/service"
 	"voichatter/utility/cache"
 	"voichatter/utility/errResponse"
+	"voichatter/utility/verCode"
 )
 
 type (
@@ -35,6 +37,9 @@ func (s *sUser) SignUp(ctx context.Context, in model.UserCreateInput) (res *v1.S
 	pwd, err := bcrypt.GenerateFromPassword([]byte(in.PasswordHash), bcrypt.DefaultCost) //加密处理
 	if err != nil {
 		return res, gerror.New(`密码加密失败`)
+	}
+	if !verCode.CaptchaVerify(in.Id, in.Code) {
+		return nil, errResponse.Unknown(`验证码错误`)
 	}
 	var user = entity.User{
 		Username:         in.Username,
@@ -185,4 +190,23 @@ func (s *sUser) UserAvatar(ctx context.Context, file *ghttp.UploadFile) (res *v1
 	return &v1.UserAvatarRes{
 		UserInfo: *userInfo,
 	}, nil
+}
+
+func (s *sUser) generateCaptcha(r *ghttp.Request) {
+	var driver base64Captcha.Driver
+	driverDigit := &base64Captcha.DriverDigit{
+		Height:   80,  //高度
+		Width:    240, //宽度
+		MaxSkew:  0.7,
+		Length:   4, //数字个数
+		DotCount: 80,
+	}
+	driver = driverDigit
+	c := base64Captcha.NewCaptcha(driver, verCode.Store)
+	id, b64s, ans, err := c.Generate()
+	g.Dump(id, ans)
+	if err != nil {
+		r.Response.WriteJson(g.Map{"code": 4, "message": "生成错误", "data": nil})
+	}
+	r.Response.WriteJson(g.Map{"code": 0, "data": b64s, "message": "success"})
 }

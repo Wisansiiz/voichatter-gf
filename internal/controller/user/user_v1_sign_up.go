@@ -14,6 +14,8 @@ func (c *ControllerV1) SignUp(ctx context.Context, req *v1.SignUpReq) (res *v1.S
 		Email:             req.Email,
 		PasswordHash:      req.PasswordHash,
 		ReenteredPassword: req.ReenteredPassword,
+		Code:              req.Code,
+		Id:                req.Id,
 	})
 	if err != nil {
 		return nil, err

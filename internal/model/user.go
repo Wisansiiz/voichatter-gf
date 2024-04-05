@@ -10,6 +10,8 @@ type UserCreateInput struct {
 	Email             string
 	PasswordHash      string
 	ReenteredPassword string
+	Code              string
+	Id                string
 }
 
 type UserSignInInput struct {
