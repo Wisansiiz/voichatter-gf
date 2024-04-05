@@ -8,14 +8,22 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gorilla/websocket"
+	"github.com/importcjj/sensitive"
 	"voichatter/internal/dao"
 	"voichatter/internal/model"
 	"voichatter/internal/model/entity"
 )
 
 var (
-	rooms = make(map[uint64][]map[uint64]*websocket.Conn)
+	rooms  = make(map[uint64][]map[uint64]*websocket.Conn)
+	filter = sensitive.New()
 )
+
+func init() {
+	if err := filter.LoadWordDict("./utility/dict/dict.txt"); err != nil {
+		return
+	}
+}
 
 func MessageSend(r *ghttp.Request) {
 	ws, err := r.WebSocket()
@@ -64,14 +72,17 @@ func MessageSend(r *ghttp.Request) {
 			rooms[targetId] = append(rooms[targetId], currentUser)
 		}
 		code := str.Get("code").String()
+		data := str.Get("data").String()
+
+		content := filter.Replace(data, '*')
 		var id int64
-		if code != "ping" {
+		if code != "ping" && code != "update" {
 			// 持久化消息到数据库
 			id, err = dao.Message.Ctx(r.Context()).InsertAndGetId(
 				&entity.Message{
 					MessageType:  code,
 					SenderUserId: userId,
-					Content:      str.Get("data").String(),
+					Content:      content,
 					ChannelId:    targetId,
 					ServerId:     str.Get("serverId").Uint64(),
 					SendDate:     gtime.Now(),
@@ -82,11 +93,26 @@ func MessageSend(r *ghttp.Request) {
 				return
 			}
 		}
+		// 根据收到的code值修改消息的内容
+		// when code is "update", update the message content
+		if code == "update" {
+			content = content + " (edited)"
+			id = str.Get("messageId").Int64()
+			_, err = dao.Message.Ctx(r.Context()).
+				Fields("content").
+				Data(g.Map{"content": content}).
+				Where("message_id", id).
+				Update()
+			if err != nil {
+				r.SetError(gerror.New("更新消息出错"))
+				return
+			}
+		}
 		var messageInfo = model.MessageInfo{
 			MessageId:    uint64(id),
 			MessageType:  code,
 			ChannelId:    targetId,
-			Content:      str.Get("data").String(),
+			Content:      content,
 			ServerId:     str.Get("serverId").Uint64(),
 			Attachment:   "",
 			AvatarUrl:    r.GetCtxVar("avatarUrl").String(),
