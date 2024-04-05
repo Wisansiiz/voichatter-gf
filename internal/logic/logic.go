@@ -1,6 +1,7 @@
 package logic
 
 import (
+	_ "voichatter/internal/logic/activity"
 	_ "voichatter/internal/logic/channel"
 	_ "voichatter/internal/logic/group"
 	_ "voichatter/internal/logic/message"
