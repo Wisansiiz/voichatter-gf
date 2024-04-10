@@ -8,7 +8,7 @@ import (
 )
 
 func (c *ControllerV1) ServerJoin(ctx context.Context, req *v1.ServerJoinReq) (res *v1.ServerJoinRes, err error) {
-	server, err := service.Server().ServerJoin(ctx, req.ServerId)
+	server, err := service.Server().ServerJoin(ctx, req.ServerId, req.Link)
 	if err != nil {
 		return nil, err
 	}

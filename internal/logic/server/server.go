@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
@@ -139,7 +141,7 @@ func (s *sServer) ServerJoin(ctx context.Context, serverId uint64, link string) 
 	userId := gconv.Uint64(ctx.Value("userId"))
 	// 判断是否已经加入过服务器
 	count, err := dao.Member.Ctx(ctx).
-		Where("server_id = ? AND user_id = ?", serverId, userId).
+		Where("server_id = ? AND user_id = ?", server.ServerId, userId).
 		Count()
 	if err != nil {
 		return nil, errResponse.DbOperationError("查询是否加入过服务器时出错")
@@ -167,6 +169,37 @@ func (s *sServer) ServerJoin(ctx context.Context, serverId uint64, link string) 
 	return &v1.ServerJoinRes{
 		Server: server,
 	}, nil
+}
+
+// ServerInviteLink 生成邀请链接
+func (s *sServer) ServerInviteLink(ctx context.Context, serverId uint64) (res string, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	err = auth.IsServerCreator(ctx, serverId)
+	if err != nil {
+		return "", err
+	}
+	count, err := dao.Server.Ctx(ctx).
+		Where("server_id = ? AND creator_user_id = ?", serverId, userId).
+		Count()
+	if err != nil {
+		return "", errResponse.DbOperationError("查询拥有者时失败")
+	}
+	if count == 0 {
+		return "", errResponse.OperationFailed("权限不足")
+	}
+	token := make([]byte, 8)
+	_, err = rand.Read(token)
+	if err != nil {
+		return "", err
+	}
+	link := hex.EncodeToString(token)
+	g.Dump(link)
+	linkTar := fmt.Sprintf("%s-%s", consts.InviteLink, link)
+	err = g.Redis().SetEX(ctx, linkTar, serverId, int64(gtime.D))
+	if err != nil {
+		return "", errResponse.DbOperationError("生成邀请链接失败")
+	}
+	return link, nil
 }
 
 func (s *sServer) ServerDel(ctx context.Context, serverId uint64) (res *v1.ServerDelRes, err error) {

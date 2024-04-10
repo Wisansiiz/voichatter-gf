@@ -17,6 +17,7 @@ type IServerV1 interface {
 	ServerImg(ctx context.Context, req *v1.ServerImgReq) (res *v1.ServerImgRes, err error)
 	ServerInfo(ctx context.Context, req *v1.ServerInfoReq) (res *v1.ServerInfoRes, err error)
 	ServerInfoUpd(ctx context.Context, req *v1.ServerInfoUpdReq) (res *v1.ServerInfoUpdRes, err error)
+	ServerInviteLink(ctx context.Context, req *v1.ServerInviteLinkReq) (res *v1.ServerInviteLinkRes, err error)
 	ServerJoin(ctx context.Context, req *v1.ServerJoinReq) (res *v1.ServerJoinRes, err error)
 	ServerList(ctx context.Context, req *v1.ServerListReq) (res *v1.ServerListRes, err error)
 	ServerModifyName(ctx context.Context, req *v1.ServerModifyNameReq) (res *v1.ServerModifyNameRes, err error)
