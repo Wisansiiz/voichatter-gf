@@ -9,6 +9,8 @@ import (
 	"github.com/gogf/gf/v2/os/gcmd"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/mojocn/base64Captcha"
+	"voichatter/internal/controller/activity"
 	"voichatter/internal/controller/channel"
 	"voichatter/internal/controller/chat"
 	sgroup "voichatter/internal/controller/group"
@@ -20,6 +22,7 @@ import (
 	"voichatter/internal/model"
 	"voichatter/internal/model/entity"
 	"voichatter/internal/service"
+	"voichatter/utility/verCode"
 )
 
 const (
@@ -76,6 +79,24 @@ var (
 					AuthExcludePaths: g.SliceStr{"/register, /login"},
 				}
 				group.Group("/", func(group *ghttp.RouterGroup) {
+					group.GET("/api/code", func(r *ghttp.Request) {
+						var driver base64Captcha.Driver
+						driverDigit := &base64Captcha.DriverDigit{
+							Height:   80,  //高度
+							Width:    240, //宽度
+							MaxSkew:  0.7,
+							Length:   4, //数字个数
+							DotCount: 80,
+						}
+						driver = driverDigit
+						c := base64Captcha.NewCaptcha(driver, verCode.Store)
+						id, b64s, ans, err := c.Generate()
+						g.Dump(id, ans)
+						if err != nil {
+							r.Response.WriteJson(g.Map{"code": 4, "message": "生成错误", "data": nil})
+						}
+						r.Response.WriteJson(g.Map{"code": 0, "data": g.Map{"id": id, "img": b64s}, "message": "success"})
+					})
 					err := gfToken.Middleware(ctx, group)
 					if err != nil {
 						panic(err)
@@ -92,6 +113,7 @@ var (
 						channel.NewV1(),
 						notification.NewV1(),
 						qiniu.NewV1(),
+						activity.NewV1(),
 					)
 				})
 			})
