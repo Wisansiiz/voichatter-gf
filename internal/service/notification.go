@@ -15,6 +15,8 @@ type (
 	INotification interface {
 		NotificationCreate(ctx context.Context, in model.NotificationCreateInput) (res *v1.NotificationCreateRes, err error)
 		NotificationGet(ctx context.Context, serverId uint64) (res *v1.NotificationGetRes, err error)
+		NotificationUpdate(ctx context.Context, in model.NotificationUpdateInput) (res *model.Notification, err error)
+		NotificationDelete(ctx context.Context, in model.NotificationDeleteInput) error
 	}
 )
 
