@@ -1,0 +1,24 @@
+server:
+  address:     ":8000"
+  openapiPath: "/api.json"
+#  swaggerPath: "/swagger"
+  clientMaxBodySize: "10m"
+
+logger:
+  level : "all"
+  stdout: true
+
+redis:
+  default:
+    address: "地址"
+    user: "用户名"
+    pass: "密码"
+    tls: true
+# mysql 的配置在main.go中通过读取环境变量的方式获取 ”MYSQL_LINK“
+
+qiniu:
+  accessKey: "公钥"
+  secretKey: "密钥"
+  bucket: "桶名称"
+  url: "前置域名/"
+  tails: "图片处理的后缀"
