@@ -89,3 +89,13 @@ func DelJoinServerUsersCache(ctx context.Context, userId uint64) error {
 	}
 	return err
 }
+
+func DelNotification(ctx context.Context, serverId uint64) error {
+	_, err := g.Redis().Del(ctx,
+		fmt.Sprintf("%s-%d", consts.Notification, serverId))
+	if err != nil {
+		return errResponse.DbOperationError("删除Notification缓存失败")
+	}
+	return err
+
+}

@@ -11,6 +11,7 @@ import (
 	"voichatter/internal/dao"
 	"voichatter/internal/model"
 	"voichatter/internal/service"
+	"voichatter/utility/cache"
 	"voichatter/utility/errResponse"
 )
 
@@ -84,4 +85,48 @@ func (s *sNotification) NotificationGet(ctx context.Context, serverId uint64) (r
 	return &v1.NotificationGetRes{
 		Notification: notification,
 	}, nil
+}
+
+func (s *sNotification) NotificationUpdate(ctx context.Context, in model.NotificationUpdateInput) (res *model.Notification, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	count, err := dao.Member.Ctx(ctx).
+		Where("server_id = ? AND user_id = ? AND s_permissions IN (?)", in.ServerId, userId, g.SliceStr{"owner", "admin"}).
+		Count()
+	if err != nil || count == 0 {
+		return nil, errResponse.DbOperationError("权限不足")
+	}
+	_, err = dao.Notification.Ctx(ctx).
+		Where("notification_id = ?", in.NotificationId).
+		Update(in)
+	if err != nil {
+		return nil, errResponse.DbOperationError("操作失败")
+	}
+
+	if err = cache.DelNotification(ctx, in.ServerId); err != nil {
+		return nil, errResponse.OperationFailed("删除缓存失败")
+	}
+	err = dao.Notification.Ctx(ctx).
+		Where("notification_id = ?", in.NotificationId).
+		Scan(&res)
+	if err != nil {
+		return nil, errResponse.DbOperationError("操作失败")
+	}
+	return res, nil
+}
+
+func (s *sNotification) NotificationDelete(ctx context.Context, in model.NotificationDeleteInput) error {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	count, err := dao.Member.Ctx(ctx).
+		Where("server_id = ? AND user_id = ? AND s_permissions IN (?)", in.ServerId, userId, g.SliceStr{"owner", "admin"}).
+		Count()
+	if err != nil || count == 0 {
+		return errResponse.DbOperationError("权限不足")
+	}
+	_, err = dao.Notification.Ctx(ctx).
+		Where("notification_id = ?", in.NotificationId).
+		Delete()
+	if err != nil {
+		return errResponse.DbOperationError("操作失败")
+	}
+	return cache.DelNotification(ctx, in.ServerId)
 }
