@@ -10,8 +10,9 @@ import (
 
 func (c *ControllerV1) ActivityPages(ctx context.Context, req *v1.ActivityPagesReq) (res *v1.ActivityPagesRes, err error) {
 	pages, total, err := service.Activity().ActivityPages(ctx, model.ActivityPagesInput{
-		Page:     req.Page,
-		PageSize: req.PageSize,
+		Page:          req.Page,
+		PageSize:      req.PageSize,
+		ActivityTitle: req.ActivityTitle,
 	})
 	if err != nil {
 		return nil, err

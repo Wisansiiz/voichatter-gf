@@ -13,6 +13,10 @@ import (
 type (
 	IActivity interface {
 		ActivityPages(ctx context.Context, in model.ActivityPagesInput) (res []*model.ActivityPages, total int, err error)
+		ActivityCreate(ctx context.Context, in model.ActivityCreateInput) (res *model.Activity, err error)
+		ActivityDelete(ctx context.Context, in model.ActivityDeleteInput) (err error)
+		ActivityUpdate(ctx context.Context, in model.ActivityUpdateInput) (err error)
+		ActivitySearch(ctx context.Context, in model.ActivitySearchInput) (res []*model.Activity, err error)
 	}
 )
 
