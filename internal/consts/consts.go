@@ -7,4 +7,5 @@ const (
 	ServerId     = "SERVER_ID"
 	ServerUsers  = "SERVER_USERS"
 	Notification = "NOTIFICATION"
+	InviteLink   = "INVITE_LINK"
 )
