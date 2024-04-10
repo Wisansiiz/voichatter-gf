@@ -49,3 +49,8 @@ type UserInfo struct {
 	Email     string `json:"email"            ` // 邮箱
 	AvatarUrl string `json:"avatarUrl"        ` // 头像链接
 }
+
+type UserRemoveInput struct {
+	ServerId uint64 `json:"serverId"`
+	UserId   uint64 `json:"userId"`
+}

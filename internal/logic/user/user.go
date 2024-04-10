@@ -210,3 +210,30 @@ func (s *sUser) generateCaptcha(r *ghttp.Request) {
 	}
 	r.Response.WriteJson(g.Map{"code": 0, "data": b64s, "message": "success"})
 }
+
+// UserRemove 如果是服务器拥有者可以移除服务器内的用户
+func (s *sUser) UserRemove(ctx context.Context, in model.UserRemoveInput) (err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	count, err := dao.Server.Ctx(ctx).
+		Where("server_id = ? AND creator_user_id = ?", in.ServerId, userId).
+		Count()
+	if err != nil || count == 0 {
+		return errResponse.DbOperationError("权限不足")
+	}
+	if in.UserId == userId {
+		return errResponse.OperationFailed("不能移除自己")
+	}
+	_, err = dao.Member.Ctx(ctx).
+		Where("server_id = ? AND user_id = ?", in.ServerId, in.UserId).
+		Delete()
+	if err != nil {
+		return errResponse.DbOperationError("操作失败")
+	}
+	if err = cache.DelServerUsersCache(ctx, in.ServerId); err != nil {
+		return errResponse.OperationFailed("清理缓存失败")
+	}
+	if err = cache.DelServerListCache(ctx, in.UserId); err != nil {
+		return errResponse.OperationFailed("清理缓存失败")
+	}
+	return nil
+}

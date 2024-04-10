@@ -21,6 +21,8 @@ type (
 		UserId(ctx context.Context, _ *v1.UserIdReq) (res *v1.UserIdRes, err error)
 		UserRole(ctx context.Context, in model.ModifyUserRoleInput) (res *v1.UserRoleRes, err error)
 		UserAvatar(ctx context.Context, file *ghttp.UploadFile) (res *v1.UserAvatarRes, err error)
+		// UserRemove 如果是服务器拥有者可以移除服务器内的用户
+		UserRemove(ctx context.Context, in model.UserRemoveInput) (err error)
 	}
 )
 
