@@ -40,6 +40,7 @@ func (s *sChannel) ChannelCreate(ctx context.Context, in model.ChannelCreateInpu
 	channelId, err := dao.Channel.Ctx(ctx).
 		InsertAndGetId(&entity.Channel{
 			ServerId:     in.ServerId,
+			GroupId:      in.GroupId,
 			ChannelName:  in.ChannelName,
 			Type:         in.Type,
 			CreateUserId: userId,

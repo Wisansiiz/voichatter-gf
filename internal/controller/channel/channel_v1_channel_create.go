@@ -13,6 +13,7 @@ func (c *ControllerV1) ChannelCreate(ctx context.Context, req *v1.ChannelCreateR
 		Type:        req.Type,
 		ServerId:    req.ServerId,
 		ChannelName: req.ChannelName,
+		GroupId:     req.GroupId,
 	})
 	if err != nil {
 		return nil, err
