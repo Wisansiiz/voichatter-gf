@@ -23,6 +23,7 @@ type (
 		UserAvatar(ctx context.Context, file *ghttp.UploadFile) (res *v1.UserAvatarRes, err error)
 		// UserRemove 如果是服务器拥有者可以移除服务器内的用户
 		UserRemove(ctx context.Context, in model.UserRemoveInput) (err error)
+		UserInfoUpd(ctx context.Context, in model.UserInfoUpdInput) (res *model.UserInfo, err error)
 	}
 )
 

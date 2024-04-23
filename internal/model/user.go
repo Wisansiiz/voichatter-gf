@@ -54,3 +54,8 @@ type UserRemoveInput struct {
 	ServerId uint64 `json:"serverId"`
 	UserId   uint64 `json:"userId"`
 }
+
+type UserInfoUpdInput struct {
+	Username string `json:"username"          ` // 用户名
+	Email    string `json:"email"             ` // 邮箱
+}

@@ -237,3 +237,33 @@ func (s *sUser) UserRemove(ctx context.Context, in model.UserRemoveInput) (err e
 	}
 	return nil
 }
+
+func (s *sUser) UserInfoUpd(ctx context.Context, in model.UserInfoUpdInput) (res *model.UserInfo, err error) {
+	userId := gconv.Uint64(ctx.Value("userId"))
+	// 只更新字段不为空的数据，如果都为空则不更新该字段的数据
+	var data = make(g.Map)
+	if in.Username != "" {
+		data["username"] = in.Username
+	}
+	if in.Email != "" {
+		data["email"] = in.Email
+	}
+
+	_, err = dao.User.Ctx(ctx).
+		Fields("username", "email").
+		Data(data).
+		Where("user_id = ?", userId).
+		Update()
+	if err != nil {
+		return nil, errResponse.DbOperationError("操作失败")
+	}
+	var userInfo *model.UserInfo
+	if err = dao.User.Ctx(ctx).Where("user_id = ?", userId).Scan(&userInfo); err != nil {
+		return nil, errResponse.DbOperationError("操作失败")
+	}
+	// 清理缓存
+	if err = cache.DelJoinServerUsersCache(ctx, userId); err != nil {
+		return nil, errResponse.OperationFailed("清理缓存失败")
+	}
+	return userInfo, nil
+}
