@@ -76,7 +76,7 @@ var (
 					AuthAfterFunc:    authFunc,
 					LoginAfterFunc:   loginAfterFunc,
 					MultiLogin:       true,
-					AuthExcludePaths: g.SliceStr{"/register, /login"},
+					AuthExcludePaths: g.SliceStr{"/register", "/login"},
 				}
 				group.Group("/", func(group *ghttp.RouterGroup) {
 					group.GET("/api/code", func(r *ghttp.Request) {
