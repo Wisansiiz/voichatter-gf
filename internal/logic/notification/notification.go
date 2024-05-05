@@ -79,7 +79,7 @@ func (s *sNotification) NotificationGet(ctx context.Context, serverId uint64) (r
 	if err != nil {
 		return nil, errResponse.DbOperationError("获取公告失败")
 	}
-	if err = g.Redis().SetEX(ctx, fmt.Sprintf("%s-%d", consts.Notification, serverId), notification, int64(gtime.D)); err != nil {
+	if err = g.Redis().SetEX(ctx, fmt.Sprintf("%s-%d", consts.Notification, serverId), notification, consts.OneDaySec); err != nil {
 		return nil, errResponse.OperationFailed("设置缓存失败")
 	}
 	return &v1.NotificationGetRes{

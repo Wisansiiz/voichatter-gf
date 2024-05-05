@@ -88,7 +88,7 @@ func (s *sUser) UserList(ctx context.Context, serverId uint64) (res *v1.UserList
 		return nil, errResponse.DbOperationError("获取用户信息列表失败")
 	}
 
-	if err = g.Redis().SetEX(ctx, usersKey, users, int64(gtime.D)); err != nil {
+	if err = g.Redis().SetEX(ctx, usersKey, users, consts.OneDaySec); err != nil {
 		return nil, errResponse.DbOperationError("设置失败")
 	}
 

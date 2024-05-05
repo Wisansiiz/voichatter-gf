@@ -8,4 +8,5 @@ const (
 	ServerUsers  = "SERVER_USERS"
 	Notification = "NOTIFICATION"
 	InviteLink   = "INVITE_LINK"
+	OneDaySec    = 86400
 )

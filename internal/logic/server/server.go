@@ -58,7 +58,7 @@ func (s *sServer) ServerList(ctx context.Context, _ *v1.ServerListReq) (res *v1.
 	if err != nil {
 		return nil, errResponse.DbOperationError("查询服务器列表出错了")
 	}
-	err = g.Redis().SetEX(ctx, serverList, servers, int64(gtime.D))
+	err = g.Redis().SetEX(ctx, serverList, servers, consts.OneDaySec)
 	if err != nil {
 		return nil, errResponse.DbOperationError("设置服务器列表缓存出错了")
 	}
@@ -195,7 +195,7 @@ func (s *sServer) ServerInviteLink(ctx context.Context, serverId uint64) (res st
 	link := hex.EncodeToString(token)
 	g.Dump(link)
 	linkTar := fmt.Sprintf("%s-%s", consts.InviteLink, link)
-	err = g.Redis().SetEX(ctx, linkTar, serverId, int64(gtime.D))
+	err = g.Redis().SetEX(ctx, linkTar, serverId, consts.OneDaySec)
 	if err != nil {
 		return "", errResponse.DbOperationError("生成邀请链接失败")
 	}

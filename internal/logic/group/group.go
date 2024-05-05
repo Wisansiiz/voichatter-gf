@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	v1 "voichatter/api/group/v1"
 	"voichatter/internal/consts"
@@ -89,10 +88,10 @@ func (s *sGroup) GroupList(ctx context.Context, serverId uint64) (res *v1.GroupL
 		return nil, errResponse.DbOperationError("查询失败")
 	}
 	// 再将数据存入redis，缓存时间为一天
-	if err = g.Redis().SetEX(ctx, serverVoGroup, groupList, int64(gtime.D)); err != nil {
+	if err = g.Redis().SetEX(ctx, serverVoGroup, groupList, consts.OneDaySec); err != nil {
 		return nil, errResponse.DbOperationError("设置失败")
 	}
-	if err = g.Redis().SetEX(ctx, serverVoChannel, channelList, int64(gtime.D)); err != nil {
+	if err = g.Redis().SetEX(ctx, serverVoChannel, channelList, consts.OneDaySec); err != nil {
 		return nil, errResponse.DbOperationError("设置失败")
 	}
 	return &v1.GroupListRes{
