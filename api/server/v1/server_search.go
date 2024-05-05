@@ -7,7 +7,7 @@ import (
 
 type ServerSearchReq struct {
 	g.Meta     `path:"/servers/search" method:"get" tags:"ServerService" summary:""`
-	ServerName string `p:"serverName" v:"required"`
+	ServerName string `p:"serverName"`
 }
 
 type ServerSearchRes struct {
