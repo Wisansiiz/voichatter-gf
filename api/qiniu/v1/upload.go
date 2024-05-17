@@ -6,8 +6,10 @@ import (
 )
 
 type UploadFileReq struct {
-	g.Meta `path:"/file" method:"post" mime:"multipart/form-data" tags:"file" summary:"file"`
-	File   *ghttp.UploadFile `p:"file" v:"required" type:"file" dc:"选择文件"`
+	g.Meta    `path:"/file" method:"post" mime:"multipart/form-data" tags:"file" summary:"file"`
+	File      *ghttp.UploadFile `p:"file" v:"required" type:"file" dc:"选择文件"`
+	ServerId  int               `p:"serverId" v:"required" dc:"服务器编号"`
+	ChannelId int               `p:"channelId" v:"required" dc:"频道编号"`
 }
 
 type UploadFileRes struct {
