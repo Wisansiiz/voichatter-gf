@@ -32,6 +32,7 @@ func (s *sActivity) ActivityPages(ctx context.Context, in model.ActivityPagesInp
 		return nil, 0, errResponse.DbOperationErrorDefault()
 	}
 	count, err := dao.Activity.Ctx(ctx).
+		Where("end_date > ?", gtime.Now()).
 		Where("activity_title like ?", "%"+in.ActivityTitle+"%").
 		Count()
 	if err != nil {
