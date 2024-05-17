@@ -6,6 +6,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gorilla/websocket"
 	"github.com/importcjj/sensitive"
@@ -74,7 +75,14 @@ func MessageSend(r *ghttp.Request) {
 		code := str.Get("code").String()
 		data := str.Get("data").String()
 
-		content := filter.Replace(data, '*')
+		var content string
+		// 如果data以https开头
+		if gstr.HasPrefix(data, "http") {
+			content = data
+		} else {
+			content = filter.Replace(data, '*')
+		}
+
 		var id int64
 		if code != "ping" && code != "update" {
 			// 持久化消息到数据库
