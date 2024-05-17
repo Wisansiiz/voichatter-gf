@@ -21,5 +21,6 @@ type IServerV1 interface {
 	ServerJoin(ctx context.Context, req *v1.ServerJoinReq) (res *v1.ServerJoinRes, err error)
 	ServerList(ctx context.Context, req *v1.ServerListReq) (res *v1.ServerListRes, err error)
 	ServerModifyName(ctx context.Context, req *v1.ServerModifyNameReq) (res *v1.ServerModifyNameRes, err error)
+	ServerPages(ctx context.Context, req *v1.ServerPagesReq) (res *v1.ServerPagesRes, err error)
 	ServerSearch(ctx context.Context, req *v1.ServerSearchReq) (res *v1.ServerSearchRes, err error)
 }

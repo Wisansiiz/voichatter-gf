@@ -278,6 +278,20 @@ func (s *sServer) ServerSearch(ctx context.Context, serverName string) (res *v1.
 	}, nil
 }
 
+func (s *sServer) ServerPages(ctx context.Context, in model.ServerPagesInput) (res []*model.ServerPages, total int, err error) {
+	err = dao.Server.Ctx(ctx).
+		Where("server_name LIKE ? AND server_type = ?", "%"+in.ServerName+"%", "public").
+		Page(in.Page, in.PageSize).
+		Scan(&res)
+	if err != nil {
+		return nil, 0, errResponse.DbOperationErrorDefault()
+	}
+	count, err := dao.Server.Ctx(ctx).
+		Where("server_name LIKE ? AND server_type = ?", "%"+in.ServerName+"%", "public").
+		Count()
+	return res, count, nil
+}
+
 func (s *sServer) ServerInfo(ctx context.Context, serverId uint64) (res *v1.ServerInfoRes, err error) {
 	if err = auth.IsServerCreator(ctx, serverId); err != nil {
 		return nil, errResponse.NotAuthorized("你不是服务器创建者不能进行服务器设置")
