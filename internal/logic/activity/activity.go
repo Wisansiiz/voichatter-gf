@@ -25,8 +25,13 @@ func New() service.IActivity {
 
 func (s *sActivity) ActivityPages(ctx context.Context, in model.ActivityPagesInput) (res []*model.ActivityPages, total int, err error) {
 	if err = dao.Activity.Ctx(ctx).
-		Where("end_date > ?", gtime.Now()).
-		Where("activity_title like ?", "%"+in.ActivityTitle+"%").
+		Fields("activity.activity_title", "activity.server_id", "activity.activity_id",
+			"activity.activity_desc", "activity.creator_user_id", "activity.start_date", "activity.end_date",
+			"server.server_type").
+		LeftJoin("server", "server.server_id=activity.server_id").
+		Where("activity.end_date > ?", gtime.Now()).
+		Where("activity.activity_title like ?", "%"+in.ActivityTitle+"%").
+		Where("server.server_type = ?", "public").
 		Page(in.Page, in.PageSize).
 		Scan(&res); err != nil {
 		return nil, 0, errResponse.DbOperationErrorDefault()

@@ -227,6 +227,12 @@ func (s *sServer) ServerDel(ctx context.Context, serverId uint64) (res *v1.Serve
 	if err = cache.DelServerListsCache(ctx, serverId); err != nil {
 		return nil, err
 	}
+	if err = cache.DelServerUsersCache(ctx, serverId); err != nil {
+		return nil, err
+	}
+	if err = cache.DelServerListCache(ctx, userId); err != nil {
+		return nil, err
+	}
 
 	return nil, nil
 }
